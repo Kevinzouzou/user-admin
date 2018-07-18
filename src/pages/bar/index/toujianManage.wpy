@@ -1,0 +1,216 @@
+<template>
+  <view class="pp-tab">
+    <view class="pp-navbar">
+      <repeat for="{{tabs}}" index="index" item="item">
+        <view id="{{index}}" class="pp-navbar__item {{activeIndex == index ? 'pp-bar__item_on' : ''}}"
+              @tap="tabClick">
+          <view class="pp-navbar__title">{{item}}</view>
+        </view>
+      </repeat>
+      <view class="pp-navbar__slider"
+            style="transform: translateX({{sliderOffset}}px); -webkit-transform: translateX({{sliderOffset}}px);"></view>
+    </view>
+    <view class="pp-tab__panel">
+      <view class="pp-tab__content" hidden="{{activeIndex != 0}}">
+        <repeat for="{{pendingList}}" index="index" item="item">
+          <view class="pp-suggest" @tap="passTo('{{item}}','pending')">
+            <view class="pp-suggest-item">
+              <view class="pp-su-text">
+                <view class="pp-su-time">申请时间</view>
+                <view class="pp-su-title">{{item.createTime}}</view>
+              </view>
+            </view>
+            <view class="pp-su-info bt20">
+              <view class="pp-info-title">
+                业主公司
+              </view>
+              <view class="pp-info-remark">
+                {{item.addInfo.companyName}}
+              </view>
+            </view>
+            <view class="pp-su-info">
+              <view class="pp-info-title">
+                业主地址
+              </view>
+              <view class="pp-info-remark">
+                {{item.addInfo.address||'无'}}
+              </view>
+            </view>
+            <view class="pp-su-desc">
+              <view class="pp-su-title">
+                问题描述
+              </view>
+              <view class="pp-info">
+                {{item.addInfo.remark}}
+              </view>
+            </view>
+            <view class="pp-img">
+              <view class="pp-su-imgs">
+                <repeat for="{{item.addInfo.imageUrls}}" item="childItem" index="index">
+                  <image src="{{childItem}}" class="pp-su-img"
+                         @tap="previewImg('{{item.addInfo.imageUrls}}','{{childItem}}')"></image>
+                </repeat>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+      <view class="pp-tab__content" hidden="{{activeIndex != 1}}">
+        <repeat for="{{pendedList}}" index="index" item="item">
+          <view class="pp-suggest" @tap="passTo('{{item}}','pended')">
+            <view class="pp-suggest-item">
+              <view class="pp-su-text">
+                <view class="pp-su-time">申请时间</view>
+                <view class="pp-su-title">{{item.createTime}}</view>
+              </view>
+            </view>
+            <view class="pp-su-info bt20">
+              <view class="pp-info-title">
+                业主公司
+              </view>
+              <view class="pp-info-remark">
+                {{item.addInfo.companyName||'无'}}
+              </view>
+            </view>
+            <view class="pp-su-info">
+              <view class="pp-info-title">
+                业主地址
+              </view>
+              <view class="pp-info-remark">
+                {{item.addInfo.address||'无'}}
+              </view>
+            </view>
+            <view class="pp-su-desc">
+              <view class="pp-su-title">
+                问题描述
+              </view>
+              <view class="pp-info">
+                {{item.addInfo.remark}}
+              </view>
+            </view>
+            <view class="pp-img">
+              <view class="pp-su-imgs">
+                <repeat for="{{item.addInfo.imageUrls}}" item="childItem" index="index">
+                  <image src="{{childItem}}" class="pp-su-img"
+                         @tap="previewImg('{{item.addInfo.imageUrls}}','{{childItem}}')"></image>
+                </repeat>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../api/api';
+  import util from '../../../utils/util';
+
+  /**
+   * 入驻管理-员工和管理层界面一样
+   */
+  export default class EntryManageAdmin extends wepy.page {
+    config = {
+      navigationBarTitleText: '投建管理',
+      enablePullDownRefresh: false
+    };
+
+    data = {
+      tabs: ['待处理', '已处理'],
+      activeIndex: 0,
+      sliderOffset: 0,
+      sliderLeft: 0,
+      pendingList: [],
+      pendedList: []
+    };
+
+    methods = {
+      //切换选项卡
+      tabClick(e) {
+        this.sliderOffset = e.currentTarget.offsetLeft;
+        this.activeIndex = e.currentTarget.id;
+      },
+      //跳转到详情
+      passTo(item, type) {
+        let userInfo = wx.getStorageSync('userInfo');
+        let url = '';
+        if (userInfo.isManager && type === 'pending') {
+          url = '/pages/sub/index/toujianManage/toujianManageDetailAdmin_pending';
+        }
+        if (userInfo.isManager && type === 'pended') {
+          url = '/pages/sub/index/toujianManage/toujianManageDetailAdmin_pended';
+        }
+        if (!userInfo.isManager && type === 'pending') {
+          url = '/pages/sub/index/toujianManage/toujianManageDetail_pending';
+        }
+        if (!userInfo.isManager && type === 'pended') {
+          url = '/pages/sub/index/toujianManage/toujianManageDetail_pended';
+        }
+        this.$navigate(url, { entrys: JSON.stringify(item) });
+      }
+    };
+
+    onLoad() {
+      let res = wepy.getSystemInfo();
+      this.sliderLeft = (res.windowWidth / this.tabs.length) / 2;
+      this.sliderOffset = res.windowWidth / this.tabs.length * this.activeIndex;
+      let roleName = wx.getStorageSync('roleName');
+      if (roleName.indexOf('客') > -1) {
+        this.getEntryList();
+      }
+      wx.setStorageSync('info', {});
+    };
+
+    getEntryList() {
+      let _self = this;
+      let postData = {};
+      postData.type = '投诉建议';
+      let userInfo = wx.getStorageSync('userInfo');
+      let type = 'manager';
+      if (!userInfo.isManager) {
+        postData.handlerId = wx.getStorageSync('userId');
+        type = 'employee';
+      }
+      wx.showLoading({ title: '正在加载中...' });
+      api.queryProperty(postData).then(res => {
+        wx.hideLoading();
+        _self.getAppTypeInfo(res, type);
+      });
+    };
+
+    getAppTypeInfo(infoList, type) {
+      if (infoList === 0) return;
+      let _self = this;
+      infoList.forEach((item) => {
+        if (item.addInfo.next === 0) {
+          _self.pendedList.push(item);
+        }
+        if (type === 'manager') {
+          if (item.addInfo.next === 1) {
+            _self.pendingList.push(item);
+          }
+        } else {
+          if (item.addInfo.next === 2) {
+            _self.pendingList.push(item);
+          }
+        }
+      });
+      _self.$apply();
+    };
+  }
+</script>
+
+<style lang="less">
+  @import "../../../styles/tab";
+  @import "../../../styles/suggest";
+
+  .pp-navbar__slider {
+    left: ~"170rpx";
+  }
+
+  .bt20 {
+    margin-top: ~"40rpx";
+  }
+</style>

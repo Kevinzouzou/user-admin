@@ -1,0 +1,112 @@
+<template>
+  <view class="bcw pt pr pb pl">
+    <view><text class="pr">设备编号</text><text>{{patrolPoint.deviceSn}}</text></view>
+    <view><text class="pr">设备名称</text><text>{{patrolPoint.addInfo.area}}</text></view>
+    <view class="pb bb"><text class="pr">设备地址</text><text>{{patrolPoint.addInfo.addr}}</text></view>
+
+    <radio-group @change="radioChange">
+      <label class="weui-cell weui-check__label" wx:for="{{radioItems}}" wx:key="value">
+        <radio class="weui-check" value="{{item.value}}" checked="{{item.checked}}"/>
+        <view class="weui-cell__bd">{{item.name}}</view>
+      </label>
+    </radio-group>
+    <view wx:if="{{otherDealInputEnable}}" style="padding: 20rpx; background: #F4F4F4;">
+      <textarea class="weui-textarea" inputbind="checkRemarkInput" placeholder="其他填写" style="height: 6.3em;width: 100%" />
+    </view>
+    <button class="weui-btn mt" type="primary" bindtap="addPatrolLog">提交</button>
+  </view>
+
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import common from '../../../../utils/common'
+  import api from '../../../../api/api'
+
+  export default class PatrolDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '巡更点',
+      enablePullDownRefresh: false
+    }
+
+    data = {
+      patrolPointId:'',
+      patrolPoint:{},
+      radioItems: [
+        {name: '设备正常', value: '0', checked: false},
+        {name: '其他', value: '1', checked: false}
+      ],
+      checkRemark:'',
+      otherDealInputEnable: false
+    };
+
+    methods = {
+      checkRemarkInput(e){
+        this.checkRemark = e.detail.value
+      },
+      radioChange (e) {
+        //console.log('radio发生change事件，携带value值为：', e.detail.value);
+        for(let i in this.radioItems){
+          if(this.radioItems[i].value == e.detail.value){
+            this.checkRemark = this.radioItems[i].name;
+          }
+        }
+
+        if(e.detail.value == 1){
+          this.otherDealInputEnable = true
+        }else{
+          this.otherDealInputEnable = false
+        }
+        this.$apply();
+      },
+
+      async addPatrolLog(){
+        let that = this;
+
+        if(that.checkRemark.length == 0){
+          tips.alert('请输处理反馈信息');
+          return;
+        }
+
+        let addInfo = {};
+        addInfo.username = that.$parent.globalData.loginUserInfo.nickName;
+        addInfo.ipatrolDate = common.dataToDataTime(new Date());
+        addInfo.patrolTime = common.dataToDataTime(new Date());
+        addInfo.event = that.checkRemark;
+        let log = {};
+        log.parkId = common.dataToDataTime(new Date());
+        log.userId = common.dataToDataTime(new Date());
+        log.patrolPointId = common.dataToDataTime(new Date());
+        log.addInfo  = addInfo;
+
+        let result = await api.addPatrolLog({
+          header: {
+            token: that.$parent.globalData.token
+          },
+          query: log
+        });
+
+        if(result.operationResult == 'success'){
+          wx.navigateTo({
+            url: '/pages/index/patrol?patrolPointId='+that.patrolPointId
+          })
+        }
+      }
+    }
+
+    async onLoad (option) {
+      this.patrolPointId = option.patrolPointId;
+      let pointResult = await this.getPatrolPoint(api.const_storageKeys.patrolPoint_map, true);
+      if(pointResult.hasOwnProperty(this.patrolPointId)){
+        this.patrolPoint = pointResult[this.patrolPointId]
+      }
+      console.log(this.patrolPoint);
+      this.$apply()
+    }
+
+  }
+</script>
+
+<style lang="less">
+
+</style>

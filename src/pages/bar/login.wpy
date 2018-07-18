@@ -1,0 +1,230 @@
+<template>
+  <view class="page-fixed">
+    <view class="tabs">
+      <view class="tab-item {{currentTab==0?'active':''}}"  data-current="0" bindtap="swichNav">密码登录</view>
+      <view class="tab-item {{currentTab==1?'active':''}}" data-current="1" bindtap="swichNav">验证码登录</view>
+
+      <swiper class="tab-content pt mt" current="{{currentTab}}" style="height: 500rpx">
+        <swiper-item>
+          <view class="show-horizontal pt pl pr pb bb">
+            <text class="pr">账号</text>
+            <input bindinput="usernameInput" value="{{username}}" class="input" type="number" confirm-type="next" placeholder="请输入手机号码"/>
+          </view>
+          <view class="show-horizontal pt pl pr pb bb">
+            <text class="pr">密码</text>
+            <input bindinput="passwordInput" value="{{password}}" class="input" password type="text" placeholder="请输入密码"/>
+          </view>
+          <view class="btn {{isName&&isPwd ? 'btn-active':''}}" style="margin-top: 80rpx; font-size: 32rpx"  bindtap="gotoLogin">登录</view>
+        </swiper-item>
+        <swiper-item>
+          <view class="show-horizontal pt pl pr pb bb">
+            <text class="pr">账号</text>
+            <input class="input" bindinput="mobileInput" type="text" placeholder="请输入手机号码"/>
+          </view>
+          <view class="show-horizontal pt pl pr pb bb">
+            <text class="pr">密码</text>
+            <input class="input" bindinput="codeInput" type="text" placeholder="请输入手机收到的验证码" style="width: 360rpx"/>
+            <text style="color: #5F97F6;font-size: 28rpx; width: 240rpx; text-align: right" bindtap="sendCode">获取验证码</text>
+          </view>
+          <view class="btn {{isName&&isCode ? 'btn-active':''}}" style="margin-top: 80rpx; font-size: 32rpx"  bindtap="codeLogin">登录</view>
+        </swiper-item>
+      </swiper>
+    </view>
+
+    <Copyright class="pb"></Copyright>
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import md5 from '../../utils/md5'
+  import api from '../../api/api'
+  import Copyright from '../../components/copyright'
+
+  export default class Login extends wepy.page {
+    config = {
+      navigationBarTitleText: '登录',
+    }
+    data = {
+      username:'',
+      password:'',
+      mobile:'',
+      code:'',
+      currentTab: 0,
+      isName: false,
+      isPwd: false,
+      isCode: false
+    }
+
+    onReady() {
+
+    }
+
+    onLoad(){
+
+    }
+
+    methods = {
+      usernameInput(e){
+        this.username = e.detail.value;
+        if(this.username===''|| this.username===null){
+          this.isName = false;
+        }else{
+          this.isName = true;
+        }
+
+      },
+      passwordInput(e){
+        this.password = e.detail.value;
+        if(this.password===''|| this.password===null){
+          this.isPwd = false;
+        }else{
+          this.isPwd = true;
+        }
+      },
+      mobileInput(e){
+        this.mobile = e.detail.value
+        if(this.mobile===''|| this.mobile===null){
+          this.isName = false;
+        }else{
+          this.isName = true;
+        }
+      },
+      codeInput(e){
+        this.code = e.detail.value
+        if(this.code===''|| this.code===null){
+          this.isCode = false;
+        }else{
+          this.isCode = true;
+        }
+      },
+      // 点击标题切换当前页时改变样式
+      swichNav(e) {
+        var cur = e.target.dataset.current;
+        if (this.currentTab == cur) {
+          return false;
+        }
+        else {
+          this.currentTab = cur;
+          this.$apply();
+        }
+      },
+
+      sendCode(){
+        api.sendCode({cellPhoneNumber: this.mobile }).then(res=>{
+        })
+      },
+
+      gotoLogin(){
+        let _self = this;
+        if(!_self.isName&&!_self.isPwd) return;
+        api.login({cellPhoneNumber: _self.username, password: md5.hex_md5(_self.password)}).then(result=>{
+          wx.setStorageSync('token', result.token);
+          wx.setStorageSync('userInfo', result.addInfo);
+          wx.setStorageSync('phone', _self.mobile || _self.username);
+          wx.setStorageSync('userId', result.userId);
+          wx.switchTab({
+            url: '/pages/bar/index'
+          })
+        });
+      },
+      async codeLogin(){
+        if(!this.isName&&!this.isCode) return;
+        let result = await api.userLogin({
+          query: {
+            cellPhoneNumber: this.username,
+            code: this.code
+          }
+
+        });
+        wx.setStorageSync('token', result.responseList.token);
+        wx.setStorageSync('userInfo', result.responseList.addInfo);
+        wx.setStorageSync('phone', this.mobile || this.username);
+        wx.setStorageSync('userId', result.userId);
+        wx.switchTab({
+          url: '/pages/bar/index'
+        })
+      }
+    }
+
+    components = {
+      Copyright
+    }
+
+  }
+</script>
+
+<style lang="less">
+  .page-fixed{
+    position:fixed;
+    height:100%;
+    width:100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #FFFFFF;
+  }
+
+  .tabs{
+    text-align: center;
+    padding-top:  ~"80rpx";
+  }
+  .tab-item {
+    margin: 0  ~"36rpx";
+    display: inline-block;
+    font-size:  ~"30rpx";
+  }
+
+  .tab-item.active {
+    color: #222222;
+    position: relative;
+  }
+
+  .tab-item.active:after {
+    content: "";
+    display: block;
+    height:  ~"6rpx";
+    width:  ~"40rpx";
+    background: #4675F9;
+    position: absolute;
+    bottom:  ~"-23rpx";
+    left: 50%;
+    margin-left:  ~"-26rpx";
+  }
+
+  .show-horizontal{
+    text-align: left;
+    display: flex;
+    align-items: center;
+    .input{
+      font-size:  ~"28rpx";
+      color: #222222
+    }
+    .pr{
+      font-size:  ~"28rpx";
+      color: #222222;
+      width:  ~"84rpx";
+    }
+    button{
+      font-size:  ~"32rpx";
+      background: #E9E9E9;
+      color: #222222;
+    }
+  }
+  .btn{
+    width:  ~"670rpx";
+    height:  ~"80rpx";
+    background: #E9E9E9;
+    border-radius:  ~"4rpx";
+    font-size:  ~"32rpx";
+    color: #FFFFFF;
+    margin: 0 auto;
+    text-align: center;
+    line-height:  ~"80rpx";
+  }
+  .btn-active{
+    background: #5F97F6;
+  }
+</style>
+

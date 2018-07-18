@@ -1,0 +1,253 @@
+<style lang="less">
+  @import "../../../styles/tab";
+  @import "../../../styles/repair";
+</style>
+<template>
+  <view class="pp-tab">
+    <view class="pp-navbar">
+      <repeat for="{{tabList}}" index="index" item="item">
+        <view id="{{index}}" class="pp-navbar__item {{activeIndex == index ? 'pp-bar__item_on' : ''}}"
+              @tap="tabClick">
+          <view class="pp-navbar__title">{{item}}</view>
+        </view>
+      </repeat>
+      <view class="pp-navbar__slider"
+            style="transform: translateX({{sliderOffset}}px); -webkit-transform: translateX({{sliderOffset}}px);"></view>
+    </view>
+
+    <view class="pp-tab__panel">
+      <view class="pp-tab__content" hidden="{{activeIndex != 0}}">
+        <view class="apply">
+          <repeat for="{{pendingList}}" index="index" key="index" item="item">
+            <view class="section-item" @tap="passTo('{{item}}','pending')">
+              <view class="header">
+                <view class="left">
+                  <text class="title">报修日期</text>
+                  <text class="time">{{item.createTime}}</text>
+                </view>
+              </view>
+              <view class="container">
+                <view class="section-normal address">
+                  <text class="title">维修位置</text>
+                  <text class="normal">{{item.addInfo.location}}</text>
+                </view>
+                <view class="section-normal">
+                  <text class="title">问题简述</text>
+                  <text class="normal">{{item.addInfo.remark}}</text>
+                </view>
+                <view class="section-normal">
+                  <text class="title"></text>
+                  <view class="img">
+                    <repeat for="{{item.addInfo.imageUrls}}" index="childIndex" key="childIndex" item="url">
+                      <image class="{{(childIndex+1)%3!=0?'right':''}}" src="{{url}}" mode='aspectFill'></image>
+                    </repeat>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </view>
+      <view class="pp-tab__content" hidden="{{activeIndex != 1}}">
+        <view class="apply">
+          <repeat for="{{evaluateList}}" index="index" key="index" item="item">
+            <view class="section-item" @tap="passTo('{{item}}','evaluate')">
+              <view class="header">
+                <view class="left">
+                  <text class="title">报修日期</text>
+                  <text class="time">{{item.createTime}}</text>
+                </view>
+              </view>
+              <view class="container">
+                <view class="section-normal address">
+                  <text class="title">维修位置</text>
+                  <text class="normal">{{item.addInfo.location}}</text>
+                </view>
+                <view class="section-normal">
+                  <text class="title">问题简述</text>
+                  <text class="normal">{{item.addInfo.remark||'无'}}</text>
+                </view>
+                <view class="section-normal line">
+                  <text class="title"></text>
+                  <view class="img">
+                    <repeat for="{{item.addInfo.imageUrls}}" index="childIndex" key="childIndex" item="url">
+                      <image class="{{(childIndex+1)%3!=0?'right':''}}" src="{{url}}" mode='aspectFill'></image>
+                    </repeat>
+                  </view>
+                </view>
+                <!--投建反馈-->
+                <view class="section-normal feedback" >
+                  <image class="pp-section-img" src="../../../images/icon_toujianfankui.png"
+                         mode='aspectFill'></image>
+                  <view class="feedback-info">
+                    <text>{{item.settlement||'无'}}</text>
+                    <text class="time">反馈时间：{{item.addInfo.allocationTime}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </view>
+      <view class="pp-tab__content" hidden="{{activeIndex != 2}}">
+        <view class="apply">
+          <repeat for="{{pendedList}}" index="index" key="index" item="item">
+            <view class="section-item" @tap="passTo('{{item}}','pended')">
+              <view class="header">
+                <view class="left">
+                  <text class="title">报修日期</text>
+                  <text class="time">{{item.createTime}}</text>
+                </view>
+              </view>
+              <view class="container">
+                <view class="section-normal address">
+                  <text class="title">维修位置</text>
+                  <text class="normal">{{item.addInfo.location}}</text>
+                </view>
+                <view class="section-normal">
+                  <text class="title">问题简述</text>
+                  <text class="normal">{{item.addInfo.remark||'无'}}</text>
+                </view>
+                <view class="section-normal line">
+                  <text class="title"></text>
+                  <view class="img">
+                    <repeat for="{{item.addInfo.imageUrls}}" index="childIndex" key="childIndex" item="url">
+                      <image class="{{(childIndex+1)%3!=0?'right':''}}" src="{{url}}" mode='aspectFill'></image>
+                    </repeat>
+                  </view>
+                </view>
+                <!--投建反馈-->
+                <view class="section-normal feedback" >
+                  <image class="pp-section-img" src="../../../images/icon_toujianfankui.png"
+                         mode='aspectFill'></image>
+                  <view class="feedback-info">
+                    <text>{{item.settlement||'无'}}</text>
+                    <text class="time">反馈时间：{{item.addInfo.flows[1].handleTime}}</text>
+                  </view>
+                </view>
+              </view>
+              <!--已完成评价-->
+              <view class="footer" >
+                <view class="section-normal rating">
+                  <text class="title">服务星级</text>
+                  <ppRating :grade.sync="item.addInfo.commentStar" :idx.sync="index"
+                            :readOnly.sync="{{false}}"></ppRating>
+                </view>
+                <view class="section-normal assess">
+                  <text class="title">服务评价</text>
+                  <view class="normal">
+                    <text>{{item.addInfo.commentText}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import ppRating from '../../../components/ppRating';
+  import ppRatingChange from '../../../components/ppRating';
+  import api from '../../../api/api';
+
+  export default class Detail extends wepy.page {
+    config = {
+      navigationBarTitleText: '报修记录',
+      navigationBarBackgroundColor: '#1C1C20',
+      navigationBarTextStyle: 'white'
+    };
+    components = {
+      ppRating: ppRating,
+      ppRatingChange: ppRatingChange
+    };
+
+    data = {
+      tabList: ['待处理', '待评价', '已完成'],
+      activeIndex: 0,
+      sliderOffset: 0,
+      sliderLeft: 0,
+      pendingList: [],
+      pendedList: [],
+      evaluateList: [],
+      appraise: '',
+    };
+
+    computed = {};
+
+    methods = {
+      //tab切换
+      tabClick(e) {
+        this.sliderOffset = e.currentTarget.offsetLeft;
+        this.activeIndex = e.currentTarget.id;
+      },
+      //跳转切换
+      passTo(item, type){
+        let role = wx.getStorageSync('userInfo');
+          this.$navigate('/pages/sub/index/repairManage/repairDetail',{item: JSON.stringify(item), type : type,role: role.isManager})
+      }
+    };
+
+    events = {};
+
+    onLoad() {
+      let roleName = wx.getStorageSync('roleName');
+      if (roleName.indexOf('工') > -1) {
+        this.getEntryList();
+      }
+      wx.setStorageSync('info', {});
+    };
+
+    getEntryList() {
+      let _self = this;
+      let postData = {};
+      postData.type = '物业报修';
+      let userInfo = wx.getStorageSync('userInfo');
+      let type = 'manager';
+      if (!userInfo.isManager) {
+        postData.handlerId = wx.getStorageSync('userId');
+        type = 'employee';
+      }
+      wx.showLoading({title:'正在加载中...'});
+      api.queryProperty(postData).then(res => {
+        wx.hideLoading();
+        _self.getAppTypeInfo(res, type);
+      });
+    };
+
+    getAppTypeInfo(infoList, type) {
+      if (infoList === 0) return;
+      let _self = this;
+      infoList.forEach((item) => {
+        if (item.addInfo.commentStar) {
+          _self.pendedList.push(item);
+        }
+        if (item.settlement && !item.addInfo.commentTime) {
+          _self.evaluateList.push(item);
+        }
+        if (type === 'manager') {
+          if (item.addInfo.next === 1) {
+            _self.pendingList.push(item);
+          }
+        } else {
+          if (item.addInfo.next === 2) {
+            _self.pendingList.push(item);
+          }
+        }
+      });
+      _self.$apply();
+    };
+    /**
+     * 监听用户下拉动作
+     */
+    onPullDownRefresh() {
+      setTimeout((arg) => {
+        wx.stopPullDownRefresh();
+      }, 300);
+    };
+
+  }
+</script>

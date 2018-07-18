@@ -1,0 +1,176 @@
+<style lang="less">
+  .textarea, .input {
+    font-size: ~"30rpx";
+    color: #9B9B9B;
+  }
+
+  .pp-mb10 {
+    margin-bottom: ~"10rpx";
+  }
+
+  picker {
+    font-size: ~"30rpx";
+    color: #9B9B9B;
+  }
+
+</style>
+
+<script>
+  import wepy from 'wepy';
+  import 'wepy-async-function';
+  import Promise from 'promise-polyfill';
+
+  export default class extends wepy.app {
+    globalData = {
+      token: '',
+      loginPhone: '',
+      loginUserId: '',
+      loginUserInfo: {},
+      choosePersonId: '' //在管理员分配人员处理物业申请时，在通讯录页面存储选择的人的id，在分配页面再取出来
+    };
+
+    config = {
+
+      pages: [
+        'pages/bar/index',
+        'pages/bar/user',
+        'pages/bar/index/pass_manage',
+        'pages/bar/index/entryManage',
+        'pages/bar/contacts',
+        'pages/bar/login',
+        'pages/bar/index/accessQrCode',
+        'pages/bar/index/clockInOut',
+        'pages/bar/index/checkRecord',
+        'pages/bar/index/paiban',
+        'pages/bar/index/toujianManage',
+        'pages/bar/index/enterpriseFamily',
+        'pages/bar/index/repair_manage',
+        'pages/bar/index/decorator_manage',
+        'pages/bar/index/equipment_patrol',
+        'pages/bar/index/patrol',
+        'pages/bar/index/repair',
+        'pages/bar/index/patrol/patrol_detail',
+        'pages/bar/contacts_choose',
+        'pages/bar/contacts/employeedetail',
+        'pages/bar/user/workhelper',
+        'pages/bar/user/myapproval',
+        'pages/bar/user/setting',
+        'pages/bar/user/news',
+        'pages/bar/user/news/newsdetail',
+        'pages/bar/user/setting/feedback',
+        'pages/bar/user/setting/aboutus',
+        'pages/bar/user/myrepair'
+      ],
+      subPackages: [
+        {
+          'root': 'pages/sub',
+          'pages': [
+            'index/repairManage/repairDetail',
+            'index/DecoratorManage/decoratorManageDetail',
+            'index/equipmentPatrol/equipment_detail',
+            'user/approval/leave', //请假
+            'user/approval/evection', //出差
+            'user/approval/out', // 外出
+            'user/approval/detail', //详情
+            'index/entryManage/entryManageDetailAdmin_pended',
+            'index/entryManage/entryManageDetailAdmin_pending',
+            'index/entryManage/entryManageDetail_pended',
+            'index/entryManage/entryManageDetail_pending',
+            'index/toujianManage/toujianManageDetailAdmin_pended',
+            'index/toujianManage/toujianManageDetailAdmin_pending',
+            'index/toujianManage/toujianManageDetail_pending',
+            'index/toujianManage/toujianManageDetail_pended',
+            'index/enterpriseFamily/HighEndActivity',
+            'index/enterpriseFamily/financeService',
+            'index/enterpriseFamily/businessOrder',
+            'index/PassManage/passManageDetail',
+            'index/PassManage/deal'
+          ]
+        }
+      ],
+      window: {
+        navigationBarTitleText: '松湖智谷-物业管理',
+        navigationBarTextStyle: 'black',
+        navigationBarBackgroundColor: '#ffffff',
+        backgroundColor: '#eaeaea',
+        backgroundTextStyle: 'light'
+      },
+      tabBar: {
+        color: '#CBCBCB',
+        selectedColor: '#5F97F6',
+        backgroundColor: '#F9F9F9',
+        borderStyle: 'white',
+        list: [{
+          pagePath: 'pages/bar/index',
+          text: '工作台',
+          iconPath: 'images/icon_tabbar_gongzuotai_nor@2x.png',
+          selectedIconPath: 'images/icon_tabbar_gongzuotai_sel@2x.png'
+        }, {
+          pagePath: 'pages/bar/contacts',
+          text: '通讯录',
+          iconPath: 'images/icon_tabbar_tongxunlu_nor@2x.png',
+          selectedIconPath: 'images/icon_tabbar_tongxunlu_sel@2x.png'
+        }, {
+          pagePath: 'pages/bar/user',
+          text: '我的',
+          iconPath: 'images/icon_tabbar_wode_nor@2x.png',
+          selectedIconPath: 'images/icon_tabbar_wode_sel@2x.png'
+        }]
+      }
+    };
+
+    onLaunch() {
+      wx.setStorageSync('parkId', '969878f1f1149e6a7afae38636c0abc');
+    }
+
+    constructor() {
+      super();
+      this.use('requestfix');
+      this.use('promisify');
+    }
+
+    isAdmin(role) {
+      return this.globalData.adminRole.indexOf(role) > -1;
+    }
+
+    /* ============= 工具方法（app没法用mixins，就再写一遍了） ============= */
+    isObject(item) {
+      return typeof item === 'object' && !this.isArray(item);
+    }
+
+    isArray(item) {
+      return Object.prototype.toString.apply(item) === '[object Array]';
+    }
+
+    isUndefined(item) {
+      return typeof item === 'undefined';
+    }
+
+    /* ========================= 更新缓存信息 ======================== */
+    $updateGlobalData(name, obj) {
+      // 校验: globalData
+      if (!this.globalData) return;
+      // 校验: 操作字段
+      if (typeof name !== 'string' || name === '') return {};
+      // 取已有信息
+      const info = this.globalData[name] || {};
+      // 更新缓存
+      if (obj && this.isObject(obj)) {
+        // Object合并第一层
+        this.globalData[name] = Object.assign({}, info, obj);
+      } else if (!this.isUndefined(obj)) {
+        // 其他非undefined数据直接覆盖
+        this.globalData[name] = obj;
+      }
+      this.$apply && this.$apply();
+      console.info(`[${obj ? 'UPDATE' : 'GET'} GlobalData ${name}]:`, this.globalData[name]);
+      return this.globalData[name];
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "./styles/weui/index.less";
+  @import "./styles/custom/index.less";
+
+</style>

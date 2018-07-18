@@ -1,0 +1,107 @@
+<template>
+  <view class="pp-suggest">
+    <view class="pp-suggest-item">
+      <view class="pp-su-text">
+        <view class="pp-su-time">申请时间</view>
+        <view class="pp-su-title">{{record.createTime}}</view>
+      </view>
+    </view>
+    <view class="pp-su-info bt20" style="padding-top: 20rpx">
+      <view class="pp-info-title">
+        业主公司
+      </view>
+      <view class="pp-info-remark">
+        {{record.addInfo.companyName||'无'}}
+      </view>
+    </view>
+    <view class="pp-su-info">
+      <view class="pp-info-title">
+        业主地址
+      </view>
+      <view class="pp-info-remark">
+        {{record.addInfo.address||'无'}}
+      </view>
+    </view>
+    <view class="pp-su-desc">
+      <view class="pp-su-title">
+        问题描述
+      </view>
+      <view class="pp-info">
+        {{record.addInfo.remark}}
+      </view>
+    </view>
+    <view class="pp-img">
+      <view class="pp-su-imgs">
+        <repeat for="{{record.addInfo.imageUrls}}" item="childItem" index="index">
+          <image src="{{childItem}}" class="pp-su-img"
+                 @tap="previewImg('{{record.addInfo.imageUrls}}','{{childItem}}')"></image>
+        </repeat>
+      </view>
+    </view>
+  </view>
+  <!--任务分派-->
+  <view class="pp-asign">
+    <view class="pp-asign-info">
+      <view class="asign-title">
+        任务指派
+      </view>
+      <view class="assin-per">
+        <view>{{record.addInfo.flows[0].name}}于{{record.addInfo.flows[0].handleTime}}指派</view>
+      </view>
+    </view>
+  </view>
+  <view class="pp-asign" hidden="{{!record.settlement}}">
+    <view class="pp-asign-info">
+      <view class="asign-title pp-t">
+        投诉反馈
+      </view>
+      <view class="assin-per pp-per-asign">
+        <view> {{record.settlement}}</view>
+        <view class="assign-bottom">
+          <text>{{record.addInfo.flows[1].name}}:{{record.addInfo.flows[1].handleTime}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+
+</template>
+
+<script>
+  import wepy from 'wepy';
+
+  /**
+   * 入驻管理，员工界面 - 待处理
+   */
+  export default class EntryManageDetailPending extends wepy.page {
+    config = {
+      navigationBarTitleText: '详情',
+      enablePullDownRefresh: false
+    };
+
+    data = {
+      record: {}
+    };
+
+    methods = {};
+
+
+    onLoad(params) {
+      this.record = JSON.parse(params.entrys);
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "../../../../styles/suggest";
+
+  .pp-suggest {
+    margin-top: 0;
+    border-top: ~"1rpx" solid #e7e7e7;
+  }
+  .assign-bottom {
+    font-size: ~"24rpx";
+    padding-top: ~"10rpx";
+    color: #757575;
+  }
+</style>

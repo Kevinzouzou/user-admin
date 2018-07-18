@@ -1,0 +1,52 @@
+<template>
+  <view class="bcw pt pr pb pl">
+    <view><text class="pr">设备编号</text><text>{{equipmentId}}</text></view>
+    <view><text class="pr">设备名称</text><text>消防栓</text></view>
+    <view class="pb bb"><text class="pr">设备地址</text><text>松湖智谷1期2栋-1909室，旁消防栓</text></view>
+
+    <radio-group @change="radioChange">
+      <label class="weui-cell weui-check__label" wx:for="{{radioItems}}" wx:key="value">
+        <radio class="weui-check" value="{{item.value}}" checked="{{item.checked}}"/>
+        <view class="weui-cell__bd">{{item.name}}</view>
+      </label>
+    </radio-group>
+    <view style="padding: 20rpx; background: #F4F4F4; ">
+      <textarea class="weui-textarea" placeholder="其他填写" style="height: 6.3em;width: 100%" />
+    </view>
+    <button class="weui-btn mt" type="primary">提交</button>
+  </view>
+
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class EquipmentDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '设备巡检',
+      enablePullDownRefresh: false
+    }
+
+    data = {
+      equipmentId:'',
+      radioItems: [
+        {name: '设备正常', value: '0', checked: false},
+        {name: '其他', value: '1', checked: false}
+      ]
+    };
+
+    methods = {
+
+    }
+
+    onLoad (option) {
+      this.equipmentId = option.equipmentId;
+      this.$apply()
+    }
+
+  }
+</script>
+
+<style lang="less">
+
+</style>

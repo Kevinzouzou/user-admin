@@ -1,0 +1,487 @@
+<style lang="less">
+  .pp-form {
+    border-top: ~"1rpx" solid #f4f4f4;
+  }
+
+  .pp-cell {
+    height: 100%;
+    background: #ffffff;
+    padding-right: ~"30rpx";
+    padding-left: ~"30rpx";
+    .pp-label {
+      height: ~"90rpx";
+      line-height: ~"90rpx";
+      .pp-must-icon {
+        width: ~"14rpx";
+        height: ~"14rpx";
+        vertical-align: middle;
+      }
+      .pp-label-text {
+        vertical-align: middle;
+        margin-left: ~"12rpx";
+        font-size: ~"30rpx";
+        color: #333333;
+      }
+    }
+    .pp-area {
+      margin-left: ~"24rpx";
+      height: ~"300rpx";
+    }
+    .pp-select {
+      display: flex;
+      flex-wrap: wrap;
+      .pp-select-imgs {
+        text-align: center;
+        margin: ~"20rpx";
+        width: ~"120rpx";
+        .pp-dele-img {
+          position: relative;
+          .pp-select-image {
+            height: ~"100rpx";
+            width: ~"100rpx";
+            border-radius: 50%;
+          }
+          .pp-img-delete {
+            position: absolute;
+            top: ~"-20rpx";
+            right: 0;
+            .pp-select-delete-img {
+              height: ~"40rpx";
+              width: ~"40rpx";
+            }
+          }
+        }
+        .pp-select-text {
+          width: ~"100rpx";
+          height: ~"40rpx";
+          overflow: hidden;
+          font-size: ~"24rpx";
+          color: #4A4A4A;
+        }
+      }
+      .pp-select-img {
+        height: ~"100rpx";
+        width: ~"100rpx";
+        margin: ~"20rpx";
+      }
+    }
+  }
+
+  .pp-cells {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: ~"1rpx" solid #f4f4f4;
+  }
+
+  input {
+    text-align: right;
+  }
+
+  .task_btn .btn {
+    width: 90%;
+    background: #5F97F6;
+    color: #fff;
+    margin-top: ~"20rpx";
+    margin-bottom: ~"20rpx";
+  }
+
+  .pp-contain {
+    position: relative;
+  }
+
+  .pp-input-img {
+    width: ~"20rpx";
+    height: ~"20rpx";
+    margin-left: ~"26rpx";
+  }
+
+  textarea {
+    width: ~"630rpx";
+    height: ~"235rpx";
+    background: #F4F4F4;
+    padding: ~"20rpx";
+  }
+  .pp-selects{
+    .pp-select-upload{
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: ~"20rpx" ~"10rpx" 0;
+      .pp-img-item{
+        padding-right:  ~"20rpx";
+        .pp-select-img{
+          width:  ~"150rpx";
+          height:  ~"150rpx";
+          margin-top:  ~"10rpx";
+        }
+      }
+    }
+  }
+  .pp-item-size{
+    margin-left:  ~"15rpx";
+    font-size:  ~"24rpx";
+    color: #9B9B9B;
+  }
+  textarea {
+    width: ~"630rpx";
+    height: ~"235rpx";
+    background: #F4F4F4;
+    padding: ~"20rpx";
+    font-size: ~"24rpx";
+  }
+
+  input {
+    font-size: ~"24rpx";
+  }
+</style>
+<template>
+  <view class="pp-contain">
+    <view class="pp-form">
+      <view class="pp-mb10">
+        <view class="pp-cell">
+          <view class="pp-label">
+            <image class="pp-must-icon" src="../../../../images/icon_bitian.png"></image>
+            <text class="pp-label-text">出差事由</text>
+          </view>
+          <view class="pp-area">
+            <textarea bindinput="textAreaChange" placeholder="请输入出差事由…" placeholder-class="textarea" maxlength="140"/>
+          </view>
+        </view>
+      </view>
+      <view class="pp-mb10">
+        <view class="pp-cell pp-cells">
+          <view class="pp-label">
+            <image class="pp-must-icon" src="../../../../images/icon_bitian.png"></image>
+            <text class="pp-label-text">出差地点</text>
+          </view>
+          <view class="pp-input">
+            <input bindinput="inputPlace" placeholder="请输入" placeholder-class="input"/>
+          </view>
+        </view>
+        <view class="pp-cell pp-cells">
+          <view class="pp-label">
+            <image class="pp-must-icon" src="../../../../images/icon_bitian.png"></image>
+            <text class="pp-label-text">开始时间</text>
+          </view>
+          <view class="pp-input" style="display: flex">
+            <picker mode="date" value="{{startDate}}" start="2018-01-01" end="2019-09-01" @change="bindStartDateChange" style="margin-right: 20rpx">
+              <view class="weui-input">{{startDate}}
+              </view>
+            </picker>
+            <picker mode="time" value="{{startTime}}" start="09:01" end="21:01" bindchange="bindStartTimeChange">
+              <view class="weui-input">{{startTime}}
+                <image src="../../../../images/icon_xuanze.png" class="pp-input-img"></image>
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="pp-cell pp-cells">
+          <view class="pp-label">
+            <image class="pp-must-icon" src="../../../../images/icon_bitian.png"></image>
+            <text class="pp-label-text">结束时间</text>
+          </view>
+          <view class="pp-input" style="display: flex">
+            <picker mode="date" value="{{endDate}}" start="2018-01-01" end="2019-09-01" @change="bindEndDateChange" style="margin-right: 20rpx">
+              <view class="weui-input">{{endDate}}</view>
+            </picker>
+            <picker mode="time" value="{{endTime}}" start="09:01" end="21:01" bindchange="bindEndTimeChange">
+              <view class="weui-input">{{endTime}}
+                <image src="../../../../images/icon_xuanze.png" class="pp-input-img"></image>
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="pp-cell pp-cells">
+          <view class="pp-label">
+            <image class="pp-must-icon" src="../../../../images/icon_bitian.png"></image>
+            <text class="pp-label-text">出差时长</text>
+          </view>
+          <view class="pp-input">
+            <input bindinput="inputDuration" placeholder="0天" placeholder-class="input"/>
+          </view>
+        </view>
+      </view>
+      <view class="pp-mb10">
+        <view class="pp-mb10">
+          <view class="pp-cell">
+            <view class="pp-label">
+              <image class="pp-must-icon" src="../../../../images/icon_bitian.png"></image>
+              <text class="pp-label-text">GPS定位</text>
+            </view>
+            <view class="pp-area">
+              <map id="map" longitude="{{longitude}}" latitude="{{latitude}}" scale="15" controls="{{controls}}"
+                   bindcontroltap="controltap" markers="{{markers}}" bindmarkertap="markertap" polyline="{{polyline}}"
+                   bindregionchange="regionchange" show-location style="width: 670rpx; height: 275rpx;"></map>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="pp-mb10">
+        <view class="pp-cell">
+          <view class="pp-label">
+            <text class="pp-label-text">图片附件</text>
+          </view>
+          <view class="pp-selects">
+            <view class="pp-select-upload">
+              <repeat for="{{imglist}}" item="item" index="index">
+                <view class="pp-img-item">
+                  <image src="{{item.path}}" class="pp-select-img" style="height: 150rpx;height: 150rpx"></image>
+                </view>
+              </repeat>
+              <view class="pp-img-item">
+                <image src="/images/icon_tianjiatupian.png" class="pp-select-img" @tap="addImg" style="width: 150rpx;height: 150rpx"></image>
+                <text class="pp-item-size" style="font-size: 24rpx;color: #9B9B9B;">{{imgSize}}/6</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="pp-mb10">
+        <view class="pp-cell">
+          <view class="pp-label">
+            <image class="pp-must-icon" src="../../../../images/icon_bitian.png"></image>
+            <text class="pp-label-text">审批人</text>
+          </view>
+          <view class="pp-select">
+            <view class="pp-select-imgs">
+              <view class="pp-dele-img">
+                <image class="pp-select-image" src="{{minister[0].avatarUrl||'/images/pic_morentouxiang.png'}}"></image>
+              </view>
+              <view class="pp-select-text">
+                <text>{{minister[0].name}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="pp-mb10">
+        <view class="pp-cell">
+          <view class="pp-label">
+            <image class="pp-must-icon" src="../../../../images/icon_bitian.png"></image>
+            <text class="pp-label-text">抄送人</text>
+          </view>
+          <view class="pp-select">
+            <repeat for="{{admin}}" index="index" item="item">
+              <view class="pp-select-imgs">
+                <view class="pp-dele-img">
+                  <image class="pp-select-image" src="{{item.avatarUrl||'/images/pic_morentouxiang.png'}}"></image>
+                </view>
+                <view class="pp-select-text">
+                  <text>{{item.name}}</text>
+                </view>
+              </view>
+            </repeat>
+          </view>
+        </view>
+      </view>
+      <view class='task_btn'>
+        <button @tap="dealTask()" class='btn'>处理</button>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../bar/user/api/api';
+  import util from '../../../../utils/util';
+
+  export default class My extends wepy.page {
+    config = {
+      navigationBarTitleText: '外出'
+    };
+    components = {};
+
+    data = {
+      duration:'',
+      result: '',
+      place: '',
+      startDate: '2018-04-20',
+      endDate: '2018-04-20',
+      startTime:'00:00',
+      endTime:'00:00',
+      info: {},
+      isChoose: true,
+      imgTag: '',
+      accountIndex: 0,
+      accounts: ['病假', '事假', '婚假'],
+      longitude: '',
+      latitude: '',
+      markers: [{
+        iconPath: '/images/icon_xuanze_sel.png',
+        id: 0,
+        latitude: 23.099994,
+        longitude: 113.324520,
+        width: 50,
+        height: 50
+      }],
+      polyline: [{
+        points: [{
+          longitude: 113.3245211,
+          latitude: 23.10229
+        }, {
+          longitude: 113.324520,
+          latitude: 23.21229
+        }],
+        color: '#FF0000DD',
+        width: 2,
+        dottedLine: true
+      }],
+      controls: [{
+        id: 1,
+        iconPath: '/images/icon_yitijiao_sel.png',
+        position: {
+          left: 0,
+          top: 300 - 50,
+          width: 50,
+          height: 50
+        },
+        clickable: true
+      }],
+      imglist: [],
+      imgSize: 0,
+      minister:wx.getStorageSync('minister'),
+      admin:wx.getStorageSync('admin')
+    };
+
+    computed = {};
+
+    methods = {
+      //结束时间
+      bindEndTimeChange(e){
+        this.endTime = e.detail.value;
+      },
+      //开始时间
+      bindStartTimeChange(e){
+        this.startTime = e.detail.value;
+      },
+      //上传图片
+      addImg() {
+        let self = this;
+        if (self.imglist.length >= 6) return;
+        //上传图片
+        wx.chooseImage({
+          success: function(res) {
+            let tempFilePaths = res.tempFilePaths;
+            api.uploaImg({ file: tempFilePaths[0] }).then((res) => {
+              let img = JSON.parse(res.data);
+              self.imglist.push(img.responseList.imgUrl);
+              self.imgSize = self.imglist.length;
+              self.$apply();
+            }).catch((err) => {
+            });
+          }
+        });
+      },
+      regionchange(e) {
+        console.log(e.type);
+      },
+      markertap(e) {
+        console.log(e.markerId);
+      },
+      controltap(e) {
+        console.log(e.controlId);
+      },
+      textAreaChange(e) {
+        this.result = e.detail.value;
+      },
+      inputPlace(e) {
+        this.place = e.detail.value;
+      },
+      inputDuration(e){
+        this.duration = e.detail.value;
+      },
+      bindTypeChange(e) {
+
+      },
+      bindStartDateChange(e) {
+        this.startDate = e.detail.value;
+      },
+      bindEndDateChange(e) {
+        this.endDate = e.detail.value;
+      },
+      dealTask() {
+        if (this.startDate > this.endDate) {
+          util.toast('时间不对');
+          return;
+        }
+        if (!this.place) {
+          util.toast('请输入出差时长');
+          return;
+        }
+        if (!this.result) {
+          util.toast('请输入出差事由');
+          return;
+        }
+        let postData = {};
+        postData.userId = wx.getStorageSync('userId');
+        postData.officeType = '外出';
+        this.startTime = this.startTime +':00';
+        postData.beginTime = this.startDate + ' ' + this.startTime;
+        this.endTime = this.endTime + ':00';
+        postData.endTime = this.endDate + ' ' + this.endTime;
+        postData.typeDetail = this.result;
+        postData.state = '未完结';
+        let info = {};
+        info.result = this.result;
+        info.duration = this.duration;
+        info.address = this.place;
+        info.attachments = this.imglist;
+        info.phone = wx.getStorageSync('phone');
+        let admins = this.admin[0];
+        admins['recipientId'] = admins.id;
+        info.recipients = [];
+        info.recipients.push(admins);
+        let ministers = this.minister[0];
+        ministers['handlerId'] = ministers.id;
+        info.flows = [];
+        info.flows.push(ministers);
+        info.location = this.longitude + "," + this.latitude;
+        let user = wx.getStorageSync('userInfo');
+        info.userName = user.nickName;
+        postData.addInfo = info;
+        let _self = this;
+        api.addApproval(postData).then(res=>{
+          util.toast("提交成功!");
+          _self.result = '';
+          _self.imglist = [];
+          _self.place = '';
+          _self.$navigate('../myapproval');
+        })
+      },
+    };
+
+    events = {
+      'contact': (data, toImgTitle) => {
+        if (toImgTitle === 'chooseImg') {
+          this.imgList = data;
+        } else {
+          this.msgList = data;
+        }
+        this.isChoose = true;
+        console.log(data);
+        console.log(toImgTitle);
+
+      }
+    };
+
+    onLoad(option) {
+      this.getMapList();
+    };
+
+    getMapList() {
+      let _self = this;
+      wx.getLocation({
+        type: 'wgs84',
+        success: function(res) {
+          _self.latitude = res.latitude;
+          _self.longitude = res.longitude;
+        }
+      });
+      console.log(_self.latitude + '+' + _self.longitude);
+    }
+  }
+</script>

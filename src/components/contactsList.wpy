@@ -1,0 +1,133 @@
+<template>
+  <view class="contactslist">
+      <view class="weui-cells weui-cells_after-title">
+        <block wx:if="{{list}}">
+          <block wx:for="{{list}}" wx:for-item="departments" wx:for-index="index" wx:key="keyname">
+              <view class="weui-cell weui-cell_access" hover-class="weui-cell_active" bindtap="expandFn" data-key='{{index}}'>
+                <view class="weui-cell__bd item_tit" style="font-size: 30rpx;color: #4A4A4A;">{{departments.department}}</view>
+                <view class="weui-cell__ft icon-down {{expandIndex==index?'icon-up':''}}"></view>
+              </view>
+              <view class="sub-list {{expandIndex==index?'expand':''}}" >
+                  <block wx:if="{{departments.members.length > 0}}">
+                    <repeat for="{{departments.members}}" index="index" item="item">
+                      <view @tap="clickTo('{{item}}')" class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+                        <view class="weui-cell__hd">
+                          <image src="{{item.avatarUrl==null?'/images/pic_morentouxiang.png':item.avatarUrl}}" class="item_left_icon"></image>
+                        </view>
+                        <view class="weui-cell__bd item_tit" style="font-size: 30rpx;color: #4A4A4A;">{{item.name}}</view>
+                        <image src="/images/icons/icon_jinru@2x.png" class="list-img"></image>
+                      </view>
+                    </repeat>
+                  </block>
+                  <block wx:else>
+                      <view style="text-align:center;padding-top: 30rpx; padding-bottom: 30rpx; color:#666666">暂无联系人</view>
+                  </block>
+              </view>
+          </block>
+        </block>
+        <block wx:else>
+          <view class="weui-loadmore weui-loadmore_line">
+            <view class="weui-loadmore__tips weui-loadmore__tips_in-line">暂无联系人</view>
+          </view>
+        </block>
+      </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class ContactsList extends wepy.component {
+    props = {
+      list: {
+        type: Object,
+        default: []
+      }
+    }
+
+    data = {
+      expandIndex: -1
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+      expandFn(e){
+          this.expandIndex = e.currentTarget.dataset.key;
+      },
+      clickTo(item){
+        this.$emit('clickTo', item);
+      }
+    }
+  }
+</script>
+
+<style type="less">
+  @import "../styles/custom/fn.less";
+  .weui-cell:before {
+    left: 0;
+    right: 0;
+  }
+
+  .contactslist{
+    width: 100%;
+    margin-top:  ~"100rpx";
+    .item_left_icon{
+      margin-right: 15px;
+      vertical-align: middle;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+    }
+
+    .sub-list{
+      display: none;
+      border-top: 0.5px solid #EDEDED;
+      background-color: #FCFCFC;
+    }
+
+    .expand{
+      display: block;
+    }
+
+    .icon-down:after {
+      content: " ";
+      display: inline-block;
+      height: 6px;
+      width: 6px;
+      border-width: 0 2px 2px 0;
+      border-color: #C8C8CD;
+      border-style: solid;
+      -webkit-transform: matrix(.71, .71, -0.71, .71, 0, 0);
+      transform: matrix(.71, .71, -0.71, .71, 0, 0);
+      position: relative;
+      top: -2px;
+      margin-top: -4px;
+      right: 15px;
+    }
+
+    .icon-up:after {
+      content: " ";
+      display: inline-block;
+      height: 6px;
+      width: 6px;
+      border-width: 2px 0 0 2px;
+      border-color: #C8C8CD;
+      border-style: solid;
+      -webkit-transform: matrix(.71, .71, -0.71, .71, 0, 0);
+      transform: matrix(.71, .71, -0.71, .71, 0, 0);
+      position: relative;
+      top: -2px;
+      margin-top: -4px;
+      right: 15px;
+    }
+  }
+
+  .list-img{
+    width: ~"20rpx";
+    height: ~"20rpx";
+  }
+
+</style>

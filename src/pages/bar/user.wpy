@@ -1,0 +1,187 @@
+<template>
+  <view class="page-user">
+    <view class="userinfo">
+      <view class="base">
+        <view class="head">
+          <image src="{{userInfo.avatarUrl||'/images/bg_tupian_moren@2x.png'}}" class="head"></image>
+        </view>
+        <view class="pl">
+          <view>{{userInfo.nickName}}</view>
+          <view class="small-text">{{userInfo.position}}</view>
+        </view>
+      </view>
+      <view class="row-flex" style="margin-top: 50rpx">
+        <text>Tel：</text>
+        <text>{{userInfo.phone}}</text>
+      </view>
+      <view class="row-flex">
+        <text>E-mail：</text>
+        <text>{{userInfo.email||'无'}}</text>
+      </view>
+    </view>
+
+    <view class="weui-panel">
+      <view class="weui-cells weui-cells_after-title">
+        <navigator url="/pages/bar/user/myapproval" class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+          <view class="weui-cell__bd item_tit">审批</view>
+          <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </navigator>
+        <navigator url="/pages/bar/user/news" class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+          <view class="weui-cell__bd item_tit">新闻公告</view>
+          <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </navigator>
+      </view>
+
+      <view class="space"></view>
+
+      <view class="weui-cells weui-cells_after-title">
+        <navigator url="/pages/bar/user/myrepair" class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+          <view class="weui-cell__bd item_tit">我的报修</view>
+          <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </navigator>
+      </view>
+      <view class="space"></view>
+
+      <view class="weui-cells weui-cells_after-title">
+        <navigator url="/pages/bar/user/workhelper" class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+          <view class="weui-cell__bd item_tit">工作手册</view>
+          <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </navigator>
+      </view>
+
+      <view class="space"></view>
+      <view class="weui-cells weui-cells_after-title">
+        <navigator url="/pages/bar/user/setting" class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+          <view class="weui-cell__bd item_tit">设置</view>
+          <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </navigator>
+      </view>
+    </view>
+  </view>
+
+</template>
+
+<script>
+  import wepy from 'wepy';
+
+  export default class pageUser extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的',
+      enablePullDownRefresh: false,
+      navigationBarBackgroundColor: '#5f97f6'
+    };
+    data = {
+      isAuth: true,
+      userInfo: {},
+    };
+
+    computed = {};
+
+    methods = {
+
+      async chooseImage(e) {
+        let res = await wepy.chooseImage({
+          sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+          sourceType: ['album', 'camera'] // 可以指定来源是相册还是相机，默认二者都有
+        });
+        this.userInfo.avatarUrl = res.tempFilePaths;
+        this.$apply();
+      }
+    };
+
+    components = {};
+
+    onLoad() {
+      this.userInfo = wx.getStorageSync('userInfo');
+      this.userInfo.phone = wx.getStorageSync('phone');
+      this.$apply();
+
+    }
+  }
+</script>
+
+<style lang="less">
+
+  @import "../../styles/custom/variable/appconst.less";
+  .weui-cell {
+    height: ~"98rpx";
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .weui-cells:before {
+    border-top: none;
+  }
+
+  .weui-cells:after {
+    border-bottom: none;
+  }
+
+  .weui-panel {
+    margin-top: 0;
+  }
+
+  .weui-panel:after {
+    border-bottom: none;
+  }
+
+  .space {
+    background-color: #F1F1F1;
+    height: ~"10rpx";
+    width: 100%;
+  }
+
+  .page-user {
+
+    @userinfoHeight: 100 rpx;
+    @userinfoSpace: 8 rpx;
+
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-color: #F1F1F1;
+
+    .userinfo {
+      padding: ~"30rpx";
+      background: url("http://lmstore.oss-cn-shenzhen.aliyuncs.com/suggesstions/1530773890014.png") no-repeat center center;
+      color: #FFFFFF;
+
+      .base {
+        display: flex;
+        align-items: center;
+        .small-text {
+          font-size: small;
+        }
+      }
+
+      .head {
+        display: inline-block;
+        width: ~"120rpx";
+        height: ~"120rpx";
+        border-radius: 50%
+      }
+      .split-line {
+        margin-left: ~"20rpx";
+        margin-right: ~"20rpx";
+      }
+      .icon-left {
+        display: inline-block;
+        width: ~"42rpx";
+        height: ~"42rpx";
+        margin-right: ~"0rpx";
+      }
+
+      .row-flex {
+        display: flex;
+        align-items: center;
+        font-size: ~"24rpx";
+      }
+    }
+
+  }
+
+  .item_tit {
+    font-size: ~"30rpx";
+    color: #222222;
+  }
+</style>

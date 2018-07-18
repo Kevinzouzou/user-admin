@@ -1,0 +1,415 @@
+<template>
+  <view class="pp-enter">
+    <view class="pp-enter-title">
+      <view class="pp-enter-time">
+        <view class="pp-time-name">
+          放行时间
+        </view>
+        <view class="pp-time-info">
+          {{passInfo.addInfo.outTime}}
+        </view>
+      </view>
+      <view class="pp-state gray" wx:if="{{passInfo.stage==='已完结' && step3.name}}"
+            @tap="passTo('deal')">
+        完成
+      </view>
+      <view class="pp-state red" wx:if="{{passInfo.stage==='已完结'&& !step3.name}}" @tap="passTo('deal')">
+        撤回
+      </view>
+      <view class="pp-state yellow" wx:if="{{passInfo.stage==='未完结'}}" @tap="passTo('deal')">
+        进行中
+      </view>
+    </view>
+    <view class="enter-content">
+      <view class="pp-enter-info">
+        <view class="pp-list">
+          <view class="pp-list-item">
+            申请人
+          </view>
+          <view class="pp-list-con">
+            {{passInfo.addInfo.userName}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            申请企业
+          </view>
+          <view class="pp-list-con">
+            {{passInfo.addInfo.enterprise}}
+          </view>
+        </view>
+        <view class="pp-list pp-remark">
+          <view class="pp-list-item">
+            放行物品
+          </view>
+          <view class="pp-list-con pp-list-remark">
+            {{passInfo.addInfo.items}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            申请时间
+          </view>
+          <view class="pp-list-con">
+            {{passInfo.createTime}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="pp-enter">
+    <view class="enter-content">
+      <view class="pp-enter-info">
+        <view class="pp-list">
+          <view class="pp-list-item">
+            申请人
+          </view>
+          <view class="pp-list-con pp-list-more">
+            <view class="pp-list-time">
+              <text> {{passInfo.addInfo.userName}}</text>
+              <text class="pp-txt"> {{passInfo.createTime}}</text>
+            </view>
+            <view class="pp-list-img">
+              <image src="../../../../images/icon_bodadianhua.png" class="pp-list-img" mode="aspectFill"
+                     @tap="call('{{passInfo.addInfo.phone}}')"></image>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="pp-enter">
+    <view class="enter-content">
+      <view class="pp-enter-info">
+        <view class="pp-list">
+          <view class="pp-list-item">
+            公司审核
+          </view>
+          <view class="pp-list-con pp-list-more">
+            <view class="pp-list-time">
+              <text>{{step1.name}}</text>
+              <text class="pp-txt">{{step1.handleTime}}</text>
+            </view>
+            <view class="pp-list-img">
+              <image src="../../../../images/icon_bodadianhua.png" class="pp-list-img" mode="aspectFill"
+                     @tap="call('{{step1.phone}}')"></image>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="pp-enter" wx:if="{{step2.name}}">
+    <view class="enter-content">
+      <view class="pp-enter-info">
+        <view class="pp-list">
+          <view class="pp-list-item">
+            物业确认
+          </view>
+          <view class="pp-list-con pp-list-more">
+            <view class="pp-list-time">
+              <text>{{step2.name}}</text>
+              <text class="pp-txt">{{step2.handleTime}}</text>
+            </view>
+            <view class="pp-list-img">
+              <image src="../../../../images/icon_bodadianhua.png" class="pp-list-img" mode="aspectFill"
+                     @tap="call('{{step2.phone}}')"></image>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <!--撤销时间-->
+  <view class="pp-enter" wx:if="{{stage==='已完结'&&passInfo.addInfo.next=='-1'}}">
+    <view class="enter-content">
+      <view class="pp-enter-info">
+        <view class="pp-list">
+          <view class="pp-list-item">
+            撤销时间
+          </view>
+          <view class="pp-list-con pp-list-more">
+            <view class="pp-list-time">
+              <text>{{step2.handleTime}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <!--保安审核-->
+  <view class="pp-enter" wx:if="{{step3.name}}">
+    <view class="enter-content">
+      <view class="pp-enter-info">
+        <view class="pp-list">
+          <view class="pp-list-item">
+            保安放行
+          </view>
+          <view class="pp-list-con pp-list-more">
+            <view class="pp-list-time">
+              <text>{{step3.name}}</text>
+              <text class="pp-txt">{{step3.handleTime}}</text>
+            </view>
+            <view class="pp-list-img">
+              <image src="../../../../images/icon_bodadianhua.png" class="pp-list-img" mode="aspectFill"
+                     @tap="call('{{step3.phone}}')"></image>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="pp-enter" wx:if="{{passInfo.settlement}}">
+    <view class="enter-content">
+      <view class="pp-enter-info">
+        <view class="pp-list">
+          <view class="pp-list-item">
+            放行意见
+          </view>
+          <view class="pp-list-con pp-list-more">
+            <view class="pp-list-time">
+              <text>{{passInfo.settlement}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <!--保安输入放行意见-->
+  <view class="list" wx:if="{{role==='保安'&&type==='deal'}}">
+    <view class="list-title">
+      放行意见
+    </view>
+    <view class="list-input">
+      <input bindinput="inputPlace" placeholder="点击输入…" bindinput="inputChange" maxlength="24"/>
+    </view>
+  </view>
+  <view class="pp-bottom" wx:if="{{type==='deal'}}">
+    <view class="pp-check" @tap="clickCheck">
+      <image src="{{isCheck?'../../../../images/icon_xuanze_sel.png':'../../../../images/icon_xuanze_nor.png'}}"
+             class="pp-check-img"></image>
+      <text class="pp-text">已阅读</text>
+    </view>
+    <view class="pp-deal" wx:if="{{role==='管理员'}}" @tap="deal">
+      确认放行
+    </view>
+    <view class="pp-deal" wx:if="{{role==='保安'}}" @tap="deal">
+      完成放行
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../../api/api';
+  import util from '../../../../utils/util';
+
+  export default class PassManageDetailPended extends wepy.page {
+    components = {};
+    config = {
+      navigationBarTitleText: '放行管理历史记录',
+      enablePullDownRefresh: false
+    };
+
+    data = {
+      passInfo: {},
+      type: '',
+      stage: '',
+      isCheck: false,
+      role: '',
+      step1: {},
+      step2: {},
+      step3: {},
+      settlement: ''
+    };
+
+    methods = {
+      //保安输入意见
+      inputChange(e) {
+        this.settlement = e.detail.value;
+      },
+      //勾选
+      clickCheck() {
+        this.isCheck = !this.isCheck;
+      },
+      //拨打电话
+      call(phone) {
+        wx.makePhoneCall({
+          phoneNumber: phone
+        });
+      },
+      //处理申请
+      deal() {
+        if (!this.isCheck) {
+          util.toast('未阅读');
+          return;
+        }
+        if(this.role === '保安'){
+          if (!this.settlement) {
+            util.toast('请输入意见');
+            return;
+          }
+        }
+
+        let _self = this;
+        let postData = {};
+        postData = this.passInfo;
+        let info = {};
+        let userInfo = wx.getStorageSync('userInfo');
+        info.name = userInfo.nickName;
+        info.phone = wx.getStorageSync('phone');
+        info.handlerId = wx.getStorageSync('userId');
+        info.handleTime = util.dataToDataTime();
+        if (_self.role === '保安') {
+          postData.settlement = _self.settlement;
+          postData.stage = '已完结';
+          info.step = 3;
+        }
+        if (_self.role === '管理员') {
+          info.step = 2;
+          postData.addInfo.next = 3;
+        }
+        postData.addInfo.flows.push(info);
+        api.addApply(postData).then(res => {
+          _self.$navigate('../pass_manage');
+        });
+      }
+    };
+
+    onShow() {
+
+    }
+
+    onLoad(params) {
+      this.role = wx.getStorageSync('role');
+      this.passInfo = JSON.parse(params.info);
+      this.type = params.type; // detail详情   deal处理
+      this.stage = params.stage; // 如果是deal是的状态
+      console.log(this.type + ':' + this.stage);
+      this.getStepInfo();
+    }
+
+    getStepInfo() {
+      let stepInfo = this.passInfo.addInfo.flows;
+      let _self = this;
+      stepInfo.forEach(item => {
+        if (item.step === 1) {
+          _self.step1 = item;
+        }
+        if (item.step === 2) {
+          _self.step2 = item;
+        }
+        if (item.step === 3) {
+          _self.step3 = item;
+        }
+      });
+      if (!_self.step1.name) {
+        let data = {};
+        data.name = _self.passInfo.addInfo.userName;
+        data.handleTime = _self.passInfo.createTime;
+        data.phone = _self.passInfo.phone;
+        _self.step1 = data;
+      }
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "../../../../styles/list";
+
+  .list {
+    padding: 0 ~"40rpx";
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    height: ~"124rpx";
+    font-size: ~"28rpx";
+    color: #333333;
+    margin-top: ~"10rpx";
+    .list-title {
+      width: ~"152rpx";
+    }
+  }
+
+  .pp-enter {
+    margin-top: ~"10rpx";
+  }
+
+  .pp-enter:first-child {
+    margin-top: 0;
+  }
+
+  .pp-state {
+    font-size: ~"30rpx";
+  }
+
+  .gray {
+    color: #CBCBCB;
+  }
+
+  .yellow {
+    color: #75AE36;
+  }
+
+  .red {
+    color: #EB606A;
+  }
+
+  .pp-list-more {
+    display: flex;
+    text-align: center;
+    justify-content: space-between;
+    .pp-list-img {
+      width: ~"40rpx";
+      height: ~"40rpx";
+    }
+  }
+
+  .pp-bottom {
+    width: 100%;
+    height: ~"108rpx";
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background: #FFFFFF;
+    .pp-check {
+      font-size: ~"30rpx";
+      color: #9B9B9B;
+      display: flex;
+      align-items: center;
+      .pp-text {
+        padding-left: ~"20rpx";
+      }
+      .pp-check-img {
+        width: ~"32rpx";
+        height: ~"32rpx";
+        padding-left: ~"40rpx";
+      }
+    }
+    .pp-deal {
+      width: ~"300rpx";
+      height: ~"88rpx";
+      background: #5F97F6;
+      border-radius: ~"4rpx";
+      font-size: ~"30rpx";
+      line-height: ~"88rpx";
+      text-align: center;
+      color: #FFFFFF;
+      margin-right: ~"10rpx";
+    }
+  }
+
+  .pp-txt {
+    padding-left: ~"10rpx";
+    color: #000000;
+  }
+
+  input {
+    text-align: left;
+    color: #222222;
+    font-size: ~"28rpx";
+  }
+</style>

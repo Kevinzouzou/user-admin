@@ -1,0 +1,91 @@
+<template>
+  <view class="weui-cells weui-cells_after-title">
+    <block wx:for="{{displayTypeList}}" wx:key="id">
+      <navigator url="{{item.page}}" class="weui-cell weui-cell_access">
+        <view class="weui-cell__bd">
+          <view style="display: inline-block; vertical-align: middle;font-size: 30rpx;color: #4A4A4A;">{{item.type}}</view>
+        </view>
+        <view class="weui-badge" style="margin-right: 10px;" wx:if="{{item.badge!==0}}">{{item.badge}}</view>
+        <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+      </navigator>
+    </block>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import api from '../../../api/api'
+  import util from '../../../utils/util'
+
+  export default class enterpriseFamily extends wepy.page {
+    config = {
+      navigationBarTitleText: '企业之家',
+      enablePullDownRefresh: false
+    }
+
+    data = {
+      displayTypeList: [
+        {
+          id:1,
+          type:'高端活动',
+          page:`/pages/sub/index/enterpriseFamily/HighEndActivity`,
+          badge: 1
+        },
+        {
+          id:2,
+          type: '金融服务',
+          page:`/pages/sub/index/enterpriseFamily/financeService`,
+          badge: 2
+        },
+        {
+          id:3,
+          type:  '商务服务',
+          page:`/pages/sub/index/enterpriseFamily/businessOrder`,
+          badge: 0
+        },
+
+
+
+      ]
+    };
+
+    methods = {
+
+    }
+
+    async onLoad () {
+      wx.showLoading({ title: '正在加载中...' });
+      let _self = this;
+      api.getSerInfo({ parkId: wx.getStorageSync('parkId') }).then(res => {
+        wx.hideLoading();
+        _self.displayTypeList[0].badge = util.getTypeInfo(res, '高端活动').length;
+        _self.displayTypeList[1].badge = util.getTypeInfo(res, '金融服务').length;
+        _self.displayTypeList[2].badge = util.getTypeInfo(res, '商务服务').length;
+        this.$apply();
+      });
+    }
+
+  }
+</script>
+
+<style lang="less">
+  .weui-cell:before {
+    left: 0;
+    right: 0;
+  }
+
+  .weui-badge {
+    display:inline-block;
+    padding:.17em .4em;
+    min-width:8px;
+    border-radius:18px;
+    background-color:#E64340;
+    color:#FFFFFF;
+    line-height:1.2;
+    text-align:center;
+    font-size:12px;
+    vertical-align:middle;
+
+  }
+
+</style>

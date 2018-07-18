@@ -1,0 +1,186 @@
+<template>
+  <view class="page-index">
+    <SearchBar :placeholder="searchText"></SearchBar>
+    <view class="contactslist">
+      <view class="weui-cells weui-cells_after-title">
+        <block wx:if="{{contactsList}}">
+          <block wx:for="{{contactsList}}" wx:for-item="departments" wx:for-index="index" wx:key="index">
+            <view class="weui-cell weui-cell_access" hover-class="weui-cell_active" bindtap="expandFn"
+                  data-key='{{index}}'>
+              <view class="weui-cell__bd item_tit">{{departments.department}}</view>
+              <view class="weui-cell__ft icon-down {{expandIndex==index?'icon-up':''}}"></view>
+            </view>
+            <view class="sub-list {{expandIndex==index?'expand':''}}">
+              <block wx:if="{{departments.members.length > 0}}">
+                <repeat for="{{departments.members}}" item="item" index="index">
+                  <view data-id="{{item.id}}" bindtap="choose('{{item}}')" class="weui-cell weui-cell_access"
+                        hover-class="weui-cell_active">
+                    <view class="weui-cell__hd">
+                      <image src="{{item.addInfo.avatarUrl||'/images/pic_morentouxiang.png'}}"
+                             class="item_left_icon"></image>
+                    </view>
+                    <view class="weui-cell__bd item_tit">{{item.addInfo.name}}</view>
+                    <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+                  </view>
+                </repeat>
+              </block>
+              <block wx:else>
+                <view style="text-align:center;padding-top: 30rpx; padding-bottom: 30rpx; color:#666666">暂无联系人</view>
+              </block>
+            </view>
+          </block>
+        </block>
+        <block wx:else>
+          <view class="weui-loadmore weui-loadmore_line">
+            <view class="weui-loadmore__tips weui-loadmore__tips_in-line">暂无联系人</view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import SearchBar from '../../components/searchbar';
+  import api from '../../api/api';
+
+  export default class ContactsChoose extends wepy.page {
+    config = {
+      navigationBarTitleText: '选择人员',
+      enablePullDownRefresh: false
+    };
+    data = {
+      searchText: '搜索姓名',
+      contactsList: [],
+      expandIndex: -1
+    };
+
+    computed = {};
+
+    methods = {
+      expandFn(e) {
+        this.expandIndex = e.currentTarget.dataset.key;
+      },
+
+      choose(item) {
+        wx.setStorageSync('info', item);
+        wx.navigateBack();
+      }
+    };
+
+    components = {
+      SearchBar
+    };
+
+    async onLoad(event) {
+      let _self = this;
+      api.getContact({ parkId: wx.getStorageSync('parkId') }).then(res => {
+        _self.dealContacts(res);
+      });
+    }
+
+    dealContacts(contacts) {
+      let that = this;
+      that.contactsList.splice(0, that.contactsList.length);
+      let departments = {};
+      for (let i in contacts) {
+        let item = contacts[i];
+        let tmp = {
+          id: item.id,
+          addInfo: item.addInfo,
+          phone: item.phone,
+        };
+        if(!item.addInfo.department){
+          item.addInfo.department = "其他";
+        }
+        if (!departments.hasOwnProperty(item.addInfo.department)) {
+          departments[item.addInfo.department] = [];
+        }
+        departments[item.addInfo.department].push(tmp);
+      }
+
+      for (let j in departments) {
+        let item = {
+          department: j,
+          members: departments[j]
+        };
+        that.contactsList.push(item);
+      }
+      that.$apply();
+
+    }
+  }
+</script>
+
+<style lang="less">
+  .weui-search-bar {
+    border-bottom: none;
+  }
+
+  @import "../../styles/custom/fn.less";
+  .weui-cell:before {
+    left: 0;
+    right: 0;
+  }
+  .item_tit{
+    font-size: ~"30rpx";
+    color: #4A4A4A;
+  }
+  .contactslist {
+    width: 100%;
+    margin-top: ~"80rpx";
+    .item_left_icon {
+      margin-right: 15px;
+      vertical-align: middle;
+      width: 25px;
+      height: 24px;
+    }
+
+    .sub-list {
+      display: none;
+      border-top: 0.5px solid #EDEDED;
+      background-color: #FCFCFC;
+      & > navigator {
+        padding-left: 80 rpx;
+      }
+    }
+
+    .expand {
+      display: block;
+    }
+
+    .icon-down:after {
+      content: " ";
+      display: inline-block;
+      height: 6px;
+      width: 6px;
+      border-width: 0 2px 2px 0;
+      border-color: #C8C8CD;
+      border-style: solid;
+      -webkit-transform: matrix(.71, .71, -0.71, .71, 0, 0);
+      transform: matrix(.71, .71, -0.71, .71, 0, 0);
+      position: absolute;
+      top: 50%;
+      margin-top: -4px;
+      right: 15px;
+    }
+
+    .icon-up:after {
+      content: " ";
+      display: inline-block;
+      height: 6px;
+      width: 6px;
+      border-width: 2px 0 0 2px;
+      border-color: #C8C8CD;
+      border-style: solid;
+      -webkit-transform: matrix(.71, .71, -0.71, .71, 0, 0);
+      transform: matrix(.71, .71, -0.71, .71, 0, 0);
+      position: absolute;
+      top: 50%;
+      margin-top: -4px;
+      right: 15px;
+    }
+
+  }
+</style>

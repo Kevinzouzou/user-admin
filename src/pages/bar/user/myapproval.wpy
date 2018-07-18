@@ -1,0 +1,564 @@
+<template>
+  <view class="wrapper">
+    <!--新申请-->
+    <view class="page" wx:if="{{changeIndex===0}}">
+      <view class="item" @tap="passTo('leave')">
+        <view class="item-content">
+          <image src="/images/icon_qingjia.png"></image>
+          <text>请假</text>
+        </view>
+      </view>
+      <view class="item" @tap="passTo('evection')">
+        <view class="item-content">
+          <image src="/images/icon_chuchai.png"></image>
+          <text>出差</text>
+        </view>
+      </view>
+      <view class="item" @tap="passTo('out')">
+        <view class="item-content">
+          <image src="/images/icon_waichu.png"></image>
+          <text>外出</text>
+        </view>
+      </view>
+    </view>
+    <!--我的审批-->
+    <view class="pp-tab" wx:if="{{changeIndex===1}}">
+      <view class="pp-navbar">
+        <repeat for="{{tabList}}" index="index" item="item">
+          <view id="{{index}}" class="pp-navbar__item {{activeIndex == index ? 'pp-bar__item_on' : ''}}"
+                @tap="tabClick">
+            <view class="pp-navbar__title">{{item}}</view>
+          </view>
+        </repeat>
+        <view class="pp-navbar__slider"
+              style="transform: translateX({{sliderOffset}}px); -webkit-transform: translateX({{sliderOffset}}px);"></view>
+      </view>
+
+      <view class="pp-tab__panel">
+        <view class="pp-tab__content" hidden="{{activeIndex != 0}}">
+          <repeat for="{{pendingList}}" index="index" item="item">
+            <view class="pp-enter" @tap="moveTo('{{item}}','deal')">
+              <view class="pp-enter-title">
+                <view class="pp-enter-time">
+                  <view class="pp-time-name" wx:if="{{item.officeType ==='外出'}}">
+                    外出申请
+                  </view>
+                  <view class="pp-time-name" wx:if="{{item.officeType ==='请假'}}">
+                    请假申请
+                  </view>
+                  <view class="pp-time-name" wx:if="{{item.officeType ==='出差'}}">
+                    出差申请
+                  </view>
+                  <view class="pp-time-info">
+                    {{item.createTime}}
+                  </view>
+                </view>
+                <view class="pp-state waiting">
+                  待处理
+                </view>
+              </view>
+              <view class="enter-content">
+                <view class="pp-enter-info">
+                  <view class="pp-list" wx:if="{{item.officeType !=='请假'}}">
+                    <view class="pp-list-item">
+                      外出地点
+                    </view>
+                    <view class="pp-list-con">
+                      {{item.addInfo.address}}
+                    </view>
+                  </view>
+                  <view class="pp-list" wx:if="{{item.officeType ==='请假'}}">
+                    <view class="pp-list-item">
+                      请假类型
+                    </view>
+                    <view class="pp-list-con">
+                      {{item.addInfo.subtype}}
+                    </view>
+                  </view>
+                  <view class="pp-list ">
+                    <view class="pp-list-item">
+                      开始时间
+                    </view>
+                    <view class="pp-list-con">
+                      {{item.beginTime}}
+                    </view>
+                  </view>
+                  <view class="pp-list pp-remark">
+                    <view class="pp-list-item">
+                      结束时间
+                    </view>
+                    <view class="pp-list-con pp-list-remark">
+                      {{item.endTime}}
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </repeat>
+        </view>
+        <view class="pp-tab__content" hidden="{{activeIndex != 1}}">
+          <repeat for="{{pendedList}}" index="index" item="item">
+            <view class="pp-enter" @tap="moveTo('{{item}}','submit')">
+              <view class="pp-enter-title">
+                <view class="pp-enter-time">
+                  <view class="pp-time-name" wx:if="{{item.officeType ==='外出'}}">
+                    外出申请
+                  </view>
+                  <view class="pp-time-name" wx:if="{{item.officeType ==='请假'}}">
+                    请假申请
+                  </view>
+                  <view class="pp-time-name" wx:if="{{item.officeType ==='出差'}}">
+                    出差申请
+                  </view>
+                  <view class="pp-time-info">
+                    {{item.createTime}}
+                  </view>
+                </view>
+                <view class="pp-state {{item.state==='已完结'&&item.addInfo.result===-2  ?'reject':'end'}}">
+                  {{item.state==='已完结'&&item.addInfo.result===-2?'已驳回':'已完成'}}
+                </view>
+              </view>
+              <view class="enter-content">
+                <view class="pp-enter-info">
+                  <view class="pp-list" wx:if="{{item.officeType !=='请假'}}">
+                    <view class="pp-list-item">
+                      外出地点
+                    </view>
+                    <view class="pp-list-con">
+                      {{item.addInfo.address}}
+                    </view>
+                  </view>
+                  <view class="pp-list" wx:if="{{item.officeType ==='请假'}}">
+                    <view class="pp-list-item">
+                      请假类型
+                    </view>
+                    <view class="pp-list-con">
+                      {{item.addInfo.subtype}}
+                    </view>
+                  </view>
+                  <view class="pp-list ">
+                    <view class="pp-list-item">
+                      开始时间
+                    </view>
+                    <view class="pp-list-con">
+                      {{item.beginTime}}
+                    </view>
+                  </view>
+                  <view class="pp-list pp-remark">
+                    <view class="pp-list-item">
+                      结束时间
+                    </view>
+                    <view class="pp-list-con pp-list-remark">
+                      {{item.endTime}}
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </repeat>
+        </view>
+        <view class="pp-tab__content" hidden="{{activeIndex != 2}}">
+          <repeat for="{{evaluateList}}" index="index" item="item">
+            <view class="pp-enter" @tap="moveTo('{{item}}', 'submit')">
+              <view class="pp-enter-title">
+                <view class="pp-enter-time">
+                  <view class="pp-time-name" wx:if="{{item.officeType ==='外出'}}">
+                    外出申请
+                  </view>
+                  <view class="pp-time-name" wx:if="{{item.officeType ==='请假'}}">
+                    请假申请
+                  </view>
+                  <view class="pp-time-name" wx:if="{{item.officeType ==='出差'}}">
+                    出差申请
+                  </view>
+                  <view class="pp-time-info">
+                    {{item.createTime}}
+                  </view>
+                </view>
+                <view class="pp-state waiting" wx:if="{{item.state==='未完结'}}">
+                  待处理
+                </view>
+                <view class="pp-state {{item.state==='已完结'&&item.addInfo.result===-2  ?'reject':'end'}}" wx:else>
+                  {{item.state==='已完结'&&item.addInfo.result===-2?'已驳回':'已完成'}}
+                </view>
+              </view>
+              <view class="enter-content">
+                <view class="pp-enter-info">
+                  <view class="pp-list" wx:if="{{item.officeType !=='请假'}}">
+                    <view class="pp-list-item">
+                      外出地点
+                    </view>
+                    <view class="pp-list-con">
+                      {{item.addInfo.address}}
+                    </view>
+                  </view>
+                  <view class="pp-list" wx:if="{{item.officeType ==='请假'}}">
+                    <view class="pp-list-item">
+                      请假类型
+                    </view>
+                    <view class="pp-list-con">
+                      {{item.addInfo.subtype}}
+                    </view>
+                  </view>
+                  <view class="pp-list ">
+                    <view class="pp-list-item">
+                      开始时间
+                    </view>
+                    <view class="pp-list-con">
+                      {{item.beginTime}}
+                    </view>
+                  </view>
+                  <view class="pp-list pp-remark">
+                    <view class="pp-list-item">
+                      结束时间
+                    </view>
+                    <view class="pp-list-con pp-list-remark">
+                      {{item.endTime}}
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </view>
+    </view>
+    <!--已提交-->
+    <view class="pp-submit" wx:if="{{changeIndex===2}}">
+      <repeat for="{{myApprovalList}}" index="index" item="item">
+        <view class="pp-enter" @tap="moveTo('{{item}}','submit')">
+          <view class="pp-enter-title">
+            <view class="pp-enter-time">
+              <view class="pp-time-name" wx:if="{{item.officeType ==='外出'}}">
+                外出申请
+              </view>
+              <view class="pp-time-name" wx:if="{{item.officeType ==='请假'}}">
+                请假申请
+              </view>
+              <view class="pp-time-name" wx:if="{{item.officeType ==='出差'}}">
+                出差申请
+              </view>
+              <view class="pp-time-info">
+                {{item.createTime}}
+              </view>
+            </view>
+            <view class="pp-state waiting" wx:if="{{item.state==='未完结'}}">
+              待处理
+            </view>
+            <view class="pp-state {{item.state==='已完结'&&item.addInfo.result===-2  ?'reject':'end'}}" wx:else>
+              {{item.state==='已完结'&&item.addInfo.result===-2?'已驳回':'已完成'}}
+            </view>
+          </view>
+          <view class="enter-content">
+            <view class="pp-enter-info">
+              <view class="pp-list" wx:if="{{item.officeType !=='请假'}}">
+                <view class="pp-list-item">
+                  外出地点
+                </view>
+                <view class="pp-list-con">
+                  {{item.addInfo.address}}
+                </view>
+              </view>
+              <view class="pp-list" wx:if="{{item.officeType ==='请假'}}">
+                <view class="pp-list-item">
+                  请假类型
+                </view>
+                <view class="pp-list-con">
+                  {{item.addInfo.subtype}}
+                </view>
+              </view>
+              <view class="pp-list ">
+                <view class="pp-list-item">
+                  开始时间
+                </view>
+                <view class="pp-list-con">
+                  {{item.beginTime}}
+                </view>
+              </view>
+              <view class="pp-list pp-remark">
+                <view class="pp-list-item">
+                  结束时间
+                </view>
+                <view class="pp-list-con pp-list-remark">
+                  {{item.endTime}}
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </repeat>
+    </view>
+    <!--底座 tabbar-->
+    <view class="tabbar">
+      <repeat for="{{tabBarList}}" item="item" index="index">
+        <view class="tab" @tap="tabBarClick('{{index}}')">
+          <image src="{{item.state?item.src2:item.src1}}"></image>
+          <text class="{{item.state?'txt':''}}">{{item.name}}</text>
+        </view>
+      </repeat>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from './api/api';
+  import homeApi from '../../../api/api'
+  import util from '../../../utils/util';
+
+  export default class MyApproval extends wepy.page {
+    config = {
+      navigationBarTitleText: '审批'
+    };
+    data = {
+      changeIndex:0,
+      tabBarList: [
+        {
+          name: '新申请',
+          state: true,
+          src1: '/images/icon_xinshenqing_nor.png',
+          src2: '/images/icon_xinshenqing_sel.png'
+        }, {
+          name: '我审批的',
+          state: false,
+          src1: '/images/icon_woshenpide_nor.png',
+          src2: '/images/icon_woshenpide_sel.png'
+        }, {
+          name: '已提交',
+          state: false,
+          src1: '/images/icon_yitijiao_nor.png',
+          src2: '/images/icon_yitijiao_sel.png'
+        }
+      ],
+      tabList: ['待处理', '已处理', '抄送我'],
+      activeIndex: 0,
+      sliderOffset: 0,
+      sliderLeft: 0,
+      pendingList: [],
+      pendedList: [],
+      evaluateList: [],
+      myApprovalList:[],
+      contactsList:[]
+    };
+    methods = {
+      tabBarClick(index) {
+        this.changeIndex = index;
+        this.tabBarList.forEach((n)=>{
+          n.state = false;
+        });
+        this.tabBarList[index].state = true;
+      },
+      //tab切换
+      tabClick(e) {
+        this.sliderOffset = e.currentTarget.offsetLeft;
+        this.activeIndex = e.currentTarget.id;
+      },
+      // 跳转至请假 出差 外出页面
+      passTo(url) {
+        this.$navigate('/pages/sub/user/approval/' + url);
+      },
+      //跳转到详情页面
+      moveTo(item, type) {
+        this.$navigate('/pages/sub/user/approval/detail', { info: JSON.stringify(item), type: type});
+      }
+    };
+
+    onLoad(param) {
+      this.pendingList = [
+        {
+          userName: '科技园',
+          outTime: '2017-2-22 09:99',
+          enterprise: '2017-2-22 09:99',
+          items: '2017-2-22 09:99'
+        }
+      ];
+      this.getPendingList();
+      this.getMyList();
+      this.getPendedList();
+      this.getContactList()
+    };
+
+    getPendingList() {
+      api.approvalList({ handlerId: wx.getStorageSync('userId') }).then(res => {
+        this.pendingList = this.getAppTypeInfo(res, '未完结');
+        this.pendedList = this.getAppTypeInfo(res, '已完结');
+        this.$apply();
+      });
+    };
+
+    getPendedList() {
+      api.approvalList({ userId: wx.getStorageSync('userId') }).then(res => {
+        this.myApprovalList = res;
+        this.$apply();
+      });
+    };
+
+    getMyList() {
+      api.approvalList({ recipientId: wx.getStorageSync('userId') }).then(res => {
+        this.evaluateList = res;
+      });
+    };
+
+    getContactList(){
+      let _self = this;
+      homeApi.getContact({ parkId: wx.getStorageSync('parkId') }).then(res => {
+        _self.dealContacts(res);
+      });
+    };
+    dealContacts(contacts) {
+      let that = this;
+      that.contactsList.splice(0, that.contactsList.length);
+      let departments = {};
+      for (let i in contacts) {
+        let item = contacts[i];
+        let tmp = {
+          name: item.addInfo.nickName,
+          avatarUrl: item.addInfo.avatarUrl,
+          id: item.id,
+          phone: item.phone,
+          position:item.addInfo.position,
+          nickName: item.addInfo.nickName,
+          department: item.addInfo.department
+        };
+        if (!departments.hasOwnProperty(item.addInfo.department)) {
+          departments[item.addInfo.department] = [];
+        }
+        departments[item.addInfo.department].push(tmp);
+      }
+
+      for (let j in departments) {
+        let item = {
+          department: j,
+          members: departments[j]
+        };
+        that.contactsList.push(item);
+      }
+      that.$apply();
+      let user = wx.getStorageSync('userInfo');
+      that.contactsList.forEach((n , index)=>{
+        if(n.department === '研发部'){
+          wx.setStorageSync('admin',n.members);
+
+        }if(n.department === '研发'){
+          wx.setStorageSync('minister',n.members);
+        }
+      })
+
+    }
+    getAppTypeInfo(infoList, type) {
+      if (infoList === 0) return;
+      return infoList.filter((item) => {
+        return item.state === type;
+      });
+    };
+  }
+</script>
+
+<style lang="less">
+  @import "../../../styles/tab";
+  @import "../../../styles/list";
+
+  .pp-time-name {
+    font-weight: bold;
+  }
+
+  .pp-enter {
+    margin-top: ~"10rpx";
+  }
+  .pp-enter:first-child {
+    margin-top: 0;
+    border-top: ~"1rpx" solid #e7e7e7;
+  }
+  .pp-enter:last-child {
+    margin-bottom: ~"120rpx";
+  }
+
+  .wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .page {
+    display: flex;
+    margin-left: ~"10rpx";
+    margin-top: ~"20rpx";
+    .item {
+      flex: 1;
+      padding-left: ~"10rpx";
+      .item-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #ffffff;
+        justify-content: center;
+        width: ~"230rpx";
+        height: ~"230rpx";
+        image {
+          width: ~"72rpx";
+          height: ~"72rpx";
+        }
+        text {
+          margin-top: ~"38rpx";
+          font-size: ~"28rpx";
+        }
+      }
+    }
+
+    .item:last-child {
+      padding-right: ~"20rpx";
+    }
+  }
+
+  .tabbar {
+    position: fixed;
+    width: 100%;
+    height: ~"100rpx";
+    bottom: 0;
+    background-color: #ffffff;
+    display: flex;
+    .tab {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      font-size: ~"28rpx";
+      color: #9B9B9B;
+      image {
+        width: ~"50rpx";
+        height: ~"50rpx";
+      }
+      text {
+        margin-left: ~"20rpx";
+      }
+      .txt {
+        color: #4A4A4A;
+      }
+    }
+
+    .tab.active {
+      font-size: ~"28rpx";
+      color: #4A4A4A;
+    }
+  }
+
+  .pp-state {
+    font-size: ~"30rpx";
+  }
+
+  .waiting {
+    color: #F5A623;
+  }
+
+  .end {
+    color: #75AE36;
+  }
+
+  .reject {
+    color: #EB606A;
+  }
+</style>

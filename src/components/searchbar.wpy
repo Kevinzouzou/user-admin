@@ -1,0 +1,92 @@
+<template>
+  <view class="pp-search">
+    <view class="pp-search-bar">
+      <image src="/images/icon_sousuokuang_sousuo.png" class="pp-search-icon" mode="aspectFill"></image>
+      <input bindinput="bindSearch" placeholder="搜索" placeholder-class="input"/>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class SearchBar extends wepy.component {
+    props = {
+      placeholder: {
+        type: String,
+        default: '搜索'
+      }
+    }
+
+    data = {
+      inputShowed: false,
+      inputVal: ''
+    }
+
+    computed = {
+      computedPlaceholder() {
+        return this.inputVal || this.placeholder
+      }
+    }
+
+    methods = {
+      showInput (isShow) {
+        this.inputShowed = isShow === 'true'
+        this.$apply()
+      },
+      search () {
+        const params = {
+          key_word: this.inputVal || this.placeholder
+        }
+        wx.navigateTo({
+          url: `/pages/main/list?params=${JSON.stringify(params)}`
+        })
+      },
+      clearInput (cb) {
+        setTimeout(() => {
+          this.inputVal = ''
+          this.$apply()
+        })
+      },
+      inputTyping (e) {
+        this.inputVal = e.detail.value
+      }
+    }
+  }
+</script>
+
+<style type="less">
+  @import "../styles/custom/fn.less";
+
+  .pp-search {
+    width: 100%;
+    height: ~"100rpx";
+    background: #FFFFFF;
+    position: fixed;
+    top: 0;
+    border-top: ~"1rpx" solid #e7e7e7;
+    z-index: 999;
+    .pp-search-bar {
+      width: ~"710rpx";
+      height: ~"58rpx";
+      margin: auto;
+      background: #F4F4F4;
+      border-radius: ~"4rpx";
+      display: flex;
+      align-items: center;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      font-size:  ~"28rpx";
+      color: #CDCDCD;
+      .pp-search-icon {
+        margin-left: ~"27rpx";
+        margin-right: ~"16rpx";
+        width: ~"36rpx";
+        height: ~"36rpx";
+      }
+    }
+  }
+</style>

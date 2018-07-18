@@ -1,0 +1,108 @@
+<template>
+  <view class="page-user">
+    <view class="userinfo">
+      <view class="base">
+        <view class="head">
+          <image src="{{member.avatarUrl==null?'/images/pic_morentouxiang.png':member.avatarUrl}}" class="head"></image>
+        </view>
+        <view class="pl">
+          <view>{{member.nickName}}</view>
+          <view class="small-text">{{member.position}}</view>
+        </view>
+      </view>
+      <view class="row-flex" style="margin-top: 50rpx">
+        <text>Tel：</text>
+        <text>{{member.phone}}</text>
+      </view>
+      <view class="row-flex">
+        <text>E-mail：</text>
+        <text>{{member.email||'无'}}</text>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class EmployeeDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '详情',
+      enablePullDownRefresh: false
+    }
+    data = {
+      id:'',
+      member: {},
+      isAuth: true,
+      userInfo: {
+        nickName: '加载中...',
+        // 头像占位图
+        avatarUrl: '../images/icon/icon-avatar@2x.png',
+
+        packages: {
+          times: 0,
+          status: '正常状态'
+        },
+        identity: {
+          type: '正常状态',
+          collection: 0
+        }
+      }
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+    }
+
+    components = {
+    }
+
+    onLoad (params) {
+      this.member = JSON.parse(params.info);
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "../../../styles/custom/variable/appconst.less";
+
+  .page-user {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-color: #ffffff;
+
+    .userinfo {
+      margin:  ~"20rpx";
+      padding:  ~"30rpx";
+      border: 0.5px solid #cccccc;
+      border-radius:  ~"10rpx";
+      color: #FFFFFF;
+      background: #5f97f6;
+      .base {
+        display: flex;
+        align-items: center;
+        .small-text {
+          font-size: small;
+        }
+      }
+
+      .head {
+        display: inline-block;
+        width:  ~"120rpx";
+        height: ~"120rpx";
+        border-radius: 50%
+      }
+
+      .row-flex {
+        display: flex;
+        align-items: center;
+        font-size:  ~"24rpx";
+      }
+    }
+
+  }
+</style>

@@ -1,0 +1,241 @@
+<template>
+  <view class="calendar">
+    <view class="box">
+      <view class="box-flex">
+        <view class="flex-item">
+          <view class="item-head">一</view>
+        </view>
+        <view class="flex-item">
+          <view class="item-head">二</view>
+        </view>
+        <view class="flex-item">
+          <view class="item-head">三</view>
+        </view>
+        <view class="flex-item">
+          <view class="item-head">四</view>
+        </view>
+        <view class="flex-item">
+          <view class="item-head">五</view>
+        </view>
+        <view class="flex-item">
+          <view class="item-head">六</view>
+        </view>
+        <view class="flex-item">
+          <view class="item-head">日</view>
+        </view>
+      </view>
+      <view class="box-flex">
+        <view class="flex-item" wx:for="{{currentDayList}}" wx:for-index='key' wx:for-item="vo" wx:key="{{key}}">
+          <view class="item-content {{vo.colorClass}} {{vo==''?'bcw':''}} {{activeIndex===key?'first':''}}" @tap="clickThis('{{vo}}','{{key}}')">
+            <text class="solar">{{vo.num}}</text>
+            <text class="lunar">{{vo.lunar}}</text>
+          </view>
+          <!--
+          <view class="item-content {{vo.colorClass}} {{vo==''?'bcw':''}}" wx:if="{{currentDay != vo.num}}">{{vo.num}}</view>
+          <view class="item-content bk-color-day" wx:else>{{vo.num}}</view>
+          -->
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import calendarUtil from '../utils/calendarConver'
+
+  export default class Calendar extends wepy.component {
+    props = {
+      paibanObj:{
+        type: Object
+      }
+    }
+
+    data = {
+      currentDate: '',
+      dayList: '',
+      currentDayList: '',
+      currentObj: '',
+      currentDay: '',
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+      clickThis(item, index){
+        this.$emit('clickThis',item);
+      }
+    }
+
+    onLoad () {
+      var currentObj = this.getCurrentDayString();
+      this.currentDate = currentObj.getFullYear() + '年' + (currentObj.getMonth() + 1) + '月' + currentObj.getDate() + '日';
+      this.currentDay = currentObj.getDate();
+      this.currentObj = currentObj;
+      this.setSchedule(currentObj);
+      this.$apply();
+    }
+
+    getCurrentDayString () {
+      var objDate = this.currentDate;
+      if (objDate != '') {
+        return new Date(objDate);
+      } else {
+        var c_obj = new Date();
+        var a = c_obj.getFullYear() + '/' + (c_obj.getMonth() + 1) + '/' + c_obj.getDate();
+        return new Date(a);
+      }
+    }
+
+    setSchedule (currentObj) {
+      var that = this;
+      var m = currentObj.getMonth() + 1;
+      var Y = currentObj.getFullYear();
+      var d = currentObj.getDate();
+
+      var currentDayNum = new Date(Y, m, 0).getDate();
+      var currentDayWeek = currentObj.getUTCDay() + 1;
+      var result = currentDayWeek - (d % 7 - 1);
+      var firstKey = result <= 0 ? 7 + result : result;
+      var currentDayList = [];
+      var f = 0;
+      for (var i = 0; i < 42; i++) {
+        if (i < firstKey - 1) {
+          currentDayList[i] = ''
+        } else {
+          if (f < currentDayNum) {
+            var num = f + 1;
+            var paibanDate = this.paibanObj;
+            var colorClass = '';
+            paibanDate.first.find(function(value) {
+              if(value === num) {
+                colorClass = 'first';
+                return true;
+              }
+            });
+            paibanDate.second.find(function(value) {
+              if(value === num) {
+                colorClass = 'second';
+                return true;
+              }
+            });
+            paibanDate.third.find(function(value) {
+              if(value === num) {
+                colorClass = 'third';
+                return true;
+              }
+            });
+
+            var lunar = calendarUtil.calendar.solar2lunar(Y,m,num);
+            currentDayList[i] = {num: num, colorClass: colorClass, lunar:lunar.IDayCn};
+            f = num
+          } else if (f >= currentDayNum) {
+            currentDayList[i] = ''
+          }
+        }
+      }
+      that.currentDayList = currentDayList;
+    }
+
+
+  }
+</script>
+
+<style type="less">
+  .calendar {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    font-size: 16px;
+    background-color: #ffffff;
+  }
+
+  .box {
+    display: block;
+    margin: 10px;
+  }
+
+  .box-flex {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .flex-item {
+    flex-flow: nowrap;
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 14.2%;
+  }
+
+  .item-head {
+    margin: 5px;
+    text-align: center;
+    background-color: #ffffff;
+    height: 2rem;
+    line-height: 2rem;
+    color: #9B9B9B;
+    border-radius: 50%;
+  }
+
+  .item-content {
+    margin: 5px;
+    text-align: center;
+    background-color: #E7E7E7;
+    color: #9B9B9B;
+    border-radius: 50%;
+    position: relative;
+    &:before {
+      content:"";
+      display: inline-block;
+      padding-bottom: 100%;
+      width: .1px;
+      vertical-align: middle;
+    }
+
+    .solar{
+      position: absolute;
+      width: 100%;
+      left: 0;
+      top: 10rpx;
+    }
+    .lunar{
+      position: absolute;
+      width: 100%;
+      left: 0;
+      top: 50rpx;
+      font-size: 15rpx;
+    }
+
+  }
+
+  .bk-color-day {
+    background-color: #8A2BE2;
+  }
+
+  .item-content-current-day {
+    flex-grow: 2;
+  }
+
+  .first{
+    color: #ffffff;
+    background-color: #EB606A;
+  }
+
+  .second{
+    color: #ffffff;
+    background-color: #3FC2A5;
+  }
+
+  .third{
+    color: #ffffff;
+    background-color: #5F97F6;
+  }
+</style>

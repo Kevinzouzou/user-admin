@@ -1,0 +1,250 @@
+<template>
+  <view class="pp-tab">
+    <view class="pp-navbar">
+      <repeat for="{{tabs}}" index="index" item="item">
+        <view id="{{index}}" class="pp-navbar__item {{activeIndex == index ? 'pp-bar__item_on' : ''}}"
+              @tap="tabClick">
+          <view class="pp-navbar__title">{{item}}</view>
+        </view>
+      </repeat>
+      <view class="pp-navbar__slider"
+            style="transform: translateX({{sliderOffset}}px); -webkit-transform: translateX({{sliderOffset}}px);"></view>
+    </view>
+    <view class="pp-tab__panel">
+      <view class="pp-tab__content" hidden="{{activeIndex != 0}}">
+        <repeat for="{{pendingList}}" index="index" item="item">
+          <view class="pp-enter" @tap="passTo('{{item}}','pending')">
+            <view class="pp-enter-title">
+              <view class="pp-enter-time">
+                <view class="pp-time-name">
+                  申请时间
+                </view>
+                <view class="pp-time-info">
+                  {{item.createTime}}
+                </view>
+              </view>
+            </view>
+            <view class="enter-content">
+              <view class="pp-enter-info">
+                <view class="pp-list">
+                  <view class="pp-list-item">
+                    申请企业
+                  </view>
+                  <view class="pp-list-con">
+                    {{item.addInfo.companyName}}
+                  </view>
+                </view>
+                <view class="pp-list ">
+                  <view class="pp-list-item">
+                    联系人
+                  </view>
+                  <view class="pp-list-con">
+                    {{item.addInfo.contact}}
+                  </view>
+                </view>
+                <view class="pp-list ">
+                  <view class="pp-list-item">
+                    联系方式
+                  </view>
+                  <view class="pp-list-con">
+                    {{item.addInfo.phone}}
+                  </view>
+                </view>
+                <view class="pp-list ">
+                  <view class="pp-list-item">
+                    所属行业
+                  </view>
+                  <view class="pp-list-con">
+                    {{item.addInfo.industry}}
+                  </view>
+                </view>
+                <view class="pp-list pp-remark">
+                  <view class="pp-list-item">
+                    入住诉求
+                  </view>
+                  <view class="pp-list-con pp-list-remark">
+                    {{item.addInfo.remark}}
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+      <view class="pp-tab__content" hidden="{{activeIndex != 1}}">
+        <repeat for="{{pendedList}}" index="index" item="item">
+          <view class="pp-enter" @tap="passTo('{{item}}','pended')">
+            <view class="pp-enter-title">
+              <view class="pp-enter-time">
+                <view class="pp-time-name">
+                  申请时间
+                </view>
+                <view class="pp-time-info">
+                  {{item.createTime}}
+                </view>
+              </view>
+            </view>
+            <view class="enter-content">
+              <view class="pp-enter-info">
+                <view class="pp-list">
+                  <view class="pp-list-item">
+                    申请企业
+                  </view>
+                  <view class="pp-list-con">
+                    {{item.addInfo.companyName}}
+                  </view>
+                </view>
+                <view class="pp-list ">
+                  <view class="pp-list-item">
+                    联系人
+                  </view>
+                  <view class="pp-list-con">
+                    {{item.addInfo.contact}}
+                  </view>
+                </view>
+                <view class="pp-list ">
+                  <view class="pp-list-item">
+                    联系方式
+                  </view>
+                  <view class="pp-list-con">
+                    {{item.addInfo.phone}}
+                  </view>
+                </view>
+                <view class="pp-list ">
+                  <view class="pp-list-item">
+                    所属行业
+                  </view>
+                  <view class="pp-list-con">
+                    {{item.addInfo.industry}}
+                  </view>
+                </view>
+                <view class="pp-list pp-remark">
+                  <view class="pp-list-item">
+                    入住诉求
+                  </view>
+                  <view class="pp-list-con pp-list-remark">
+                    {{item.addInfo.remark}}
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../api/api';
+  import util from '../../../utils/util';
+
+  /**
+   * 入驻管理-员工和管理层界面一样
+   */
+  export default class EntryManageAdmin extends wepy.page {
+    config = {
+      navigationBarTitleText: '入驻管理',
+      enablePullDownRefresh: false
+    };
+
+    data = {
+      tabs: ['待处理', '已处理'],
+      activeIndex: 0,
+      sliderOffset: 0,
+      sliderLeft: 0,
+      pendingList: [],
+      pendedList: []
+    };
+
+    methods = {
+      //切换选项卡
+      tabClick(e) {
+        this.sliderOffset = e.currentTarget.offsetLeft;
+        this.activeIndex = e.currentTarget.id;
+      },
+      //跳转到详情
+      passTo(item, type) {
+        let userInfo = wx.getStorageSync('userInfo');
+        let url = '';
+        if (userInfo.isManager && type === 'pending') {
+          url = '/pages/sub/index/entryManage/entryManageDetailAdmin_pending';
+        }
+        if (userInfo.isManager && type === 'pended') {
+          url = '/pages/sub/index/entryManage/entryManageDetailAdmin_pended';
+        }
+        if (!userInfo.isManager && type === 'pending') {
+          url = '/pages/sub/index/entryManage/entryManageDetail_pending';
+        }
+        if (!userInfo.isManager && type === 'pended') {
+          url = '/pages/sub/index/entryManage/entryManageDetail_pended';
+        }
+        this.$navigate(url, { entrys: JSON.stringify(item) });
+      }
+    };
+
+    onLoad() {
+      let res = wepy.getSystemInfo();
+      this.sliderLeft = (res.windowWidth / this.tabs.length) / 2;
+      this.sliderOffset = res.windowWidth / this.tabs.length * this.activeIndex;
+      let roleName = wx.getStorageSync('roleName');
+      if (roleName.indexOf('招') > -1) {
+        this.getEntryList();
+      }
+      wx.setStorageSync('info', {});
+    };
+
+    getEntryList() {
+      let _self = this;
+      let postData = {};
+      postData.type = '入驻申请';
+      let userInfo = wx.getStorageSync('userInfo');
+      let type = 'manager';
+      if (!userInfo.isManager) {
+        postData.handlerId = wx.getStorageSync('userId');
+        type = 'employee';
+      }
+      wx.showLoading({title:'正在加载中...'});
+      api.queryProperty(postData).then(res => {
+        wx.hideLoading();
+        _self.getAppTypeInfo(res, type);
+      });
+    };
+
+    getAppTypeInfo(infoList, type) {
+      if (infoList === 0) return;
+      let _self = this;
+      infoList.forEach((item) => {
+        if (item.addInfo.next === 0) {
+          _self.pendedList.push(item);
+        }
+        if (type === 'manager') {
+          if (item.addInfo.next === 1) {
+            _self.pendingList.push(item);
+          }
+        } else {
+          if (item.addInfo.next === 2) {
+            _self.pendingList.push(item);
+          }
+        }
+      });
+      _self.$apply();
+    };
+  }
+</script>
+
+<style lang="less">
+  @import "../../../styles/tab";
+  @import "../../../styles/list";
+
+  .pp-navbar__slider {
+    left: ~"170rpx";
+  }
+
+  .pp-remark {
+    .pp-list-item {
+      line-height: ~"40rpx";
+    }
+  }
+</style>

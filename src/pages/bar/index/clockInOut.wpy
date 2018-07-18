@@ -1,0 +1,213 @@
+<template>
+  <view class="wrap">
+    <view class="time">
+      <image class="time-image" src="/images/icon_rili.png"></image>
+      <text>{{date}}</text>
+    </view>
+    <view class="record" @tap="clickRecord">
+      打卡记录
+    </view>
+    <view style="flex: 1">
+      <!--<map id="map" longitude="{{longitude}}" latitude="{{latitude}}" scale="16" markers="{{markers}}"-->
+           <!--show-location style="width: 100%; height: 60%;"></map>-->
+      <map id="map" longitude="113.923882" latitude="22.527552" scale="16" markers="{{markers}}"
+           show-location style="width: 100%; height: 60%;"></map>
+    </view>
+  </view>
+  <view class="clock" @tap="clickTime">
+    <view class="clock-txt">
+      <view class="title">{{time}}</view>
+      <view class="clock-time">上班打卡</view>
+    </view>
+    <image class="clock-image" src="/images/icon_daka.png"></image>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import util from '../../../utils/util';
+  import api from '../../../api/api'
+
+  var QQMapWX = require('../../../utils/qqmap/qqmap-wx-jssdk.min');
+  var qqmapsdk;
+  // 实例化API核心类
+  qqmapsdk = new QQMapWX({
+    key: 'CY3BZ-YNYW3-O3H3H-Y2HYD-N5OYJ-67BMF'
+  });
+
+  export default class ClockInOut extends wepy.page {
+    config = {
+      navigationBarTitleText: '打卡',
+      enablePullDownRefresh: false
+    };
+    data = {
+      longitude: '',
+      latitude: '',
+      markers: [{
+        iconPath: '/images/weizhi.png',
+        id: 1,
+        latitude: 22.527552,
+        longitude: 113.923882,
+        width: 25,
+        height: 25,
+        callout: {
+          content: 'oai',
+          color: '#ffffff',
+          fontSize: 12,
+          borderRadius: 4,
+          bgColor: '#454e6f',
+          padding: 5,
+          display: 'ALWAYS'
+        }
+      }],
+      date: util.getToday(),
+      time: '',
+      qqmapsdk: '',
+      address:''
+    };
+
+    computed = {};
+
+    methods = {
+      //跳转到打卡记录
+      clickRecord(){
+        this.$navigate('./checkRecord');
+      },
+      //打卡
+      clickTime(){
+        let postData = {};
+        postData.userId = wx.getStorageSync('userId');
+        let userInfo = wx.getStorageSync('userInfo');
+        let info = {};
+        info.name = userInfo.nickName;
+        info.department = userInfo.department;
+        info.address = this.address;
+        info.ip = '123456789';
+        info.location = this.latitude+ ','+ this.longitude;
+        postData.addInfo = info;
+        api.addTimeCheck(postData).then(res=>{
+            util.toast("打卡成功!");
+        })
+      }
+    };
+
+    onLoad() {
+      var that = this;
+      // 调用接口
+      qqmapsdk.reverseGeocoder({
+        coord_type: 3,
+        success: function(res) {
+          console.log(res);
+          that.address = res.result.address;
+          that.markers[0].title = res.result.address;
+        }
+      });
+      that.markers[0].longitude = that.longitude;
+      that.markers[0].latitude = that.latitude;
+
+    }
+
+    components = {};
+
+    onShow() {
+      this.getLocation();
+      let date = new Date();
+      const hour = date.getHours();
+      const minute = date.getMinutes();
+      const second = date.getSeconds();
+      this.time = [hour, minute, second].map(this.formatNumber).join(':');
+    }
+
+    //转换成两位的日期格式
+    formatNumber(n) {
+      n = n.toString();
+      return n[1] ? n : '0' + n;
+    };
+
+    //获取经纬度
+    getLocation() {
+      var that = this;
+      wx.getLocation({
+        type: 'gcj02',
+        success: function(res) {
+          that.longitude = res.longitude;
+          that.latitude = res.latitude;
+          that.$apply();
+        }
+      });
+    }
+
+  }
+</script>
+
+<style lang="less">
+  .wrap {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    .time {
+      width: 100%;
+      height: ~"100rpx";
+      display: flex;
+      align-items: center;
+      background: #FFFFFF;
+      justify-content: center;
+      border-top: ~"1rpx" solid #e7e7e7;
+      border-bottom: ~"1rpx" solid #e7e7e7;
+      font-size: ~"34rpx";
+      color: #4A4A4A;
+      .time-image {
+        width: ~"42rpx";
+        height: ~"42rpx";
+        margin-right: ~"24rpx";
+      }
+    }
+    .record{
+      position: fixed;
+      right: ~"20rpx";
+      top: ~"30rpx";
+      font-size: ~"28rpx";
+      color: #222222;
+    }
+  }
+
+  .page {
+    width: 100%;
+    @userinfoHeight: 100 rpx;
+    @userinfoSpace: 8 rpx;
+  }
+
+  .clock {
+    display: flex;
+    align-items: center;
+    position: relative;
+    justify-content: center;
+    .clock-txt {
+      position: fixed;
+      bottom: ~"80rpx";
+      height: ~"300rpx";
+      z-index: 999;
+      text-align: center;
+      color: #FFFFFF;
+      .title {
+        padding-top: ~"80rpx";
+        font-size: ~"54rpx";
+      }
+      .clock-time {
+        padding-top: ~"10rpx";
+        font-size: ~"24rpx";
+      }
+    }
+    .clock-image {
+      position: fixed;
+      bottom: ~"80rpx";
+      height: ~"300rpx";
+      width: ~"300rpx";
+    }
+  }
+
+
+</style>

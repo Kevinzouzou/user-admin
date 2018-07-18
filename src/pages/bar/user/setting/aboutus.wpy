@@ -1,0 +1,100 @@
+<template>
+  <view class="wrap">
+    <view class="page">
+      <view style="text-align: center; padding-top: 100rpx;">
+        <image src="/images/logo.png" style="height:260rpx;width: 260rpx;"></image>
+      </view>
+      <view style="text-align: center; padding-top: 40rpx;">v1.0</view>
+    </view>
+    <view style="display: flex; flex-direction: column; align-items: center;padding-bottom: 40rpx">
+      <text style="font-size: 24rpx">Copyright © 2018 松湖智谷 版权所有</text>
+    </view>
+  </view>
+
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class AboutUs extends wepy.page {
+    config = {
+      navigationBarTitleText: '关于',
+      enablePullDownRefresh: false
+    }
+    data = {
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+    }
+
+    components = {
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "../../../../styles/custom/fn.less";
+  page{
+    background: #FFFFFF;
+  }
+  .wrap {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    border-top: ~"1rpx" solid #e7e7e7;
+  }
+
+  .page{
+    width: 100%;
+    @userinfoHeight: 100rpx;
+    @userinfoSpace: 8rpx;
+
+    .userinfo{
+      padding: ~"20rpx" 0;
+    }
+
+    .userinfo-avatar {
+      float: left;
+      width: @userinfoHeight;
+      height: @userinfoHeight;
+      border-radius: 50%;
+    }
+
+    // space + space
+    .userinfo-info {
+      float: left;
+      line-height: 1;
+      padding: @userinfoSpace 0;
+      margin-left: 3 * @userinfoSpace;
+    }
+
+    // text + space + text
+    .userinfo-nickname {
+      color: #049BFF;
+      font-size: (@userinfoHeight - 4 * @userinfoSpace) * (16 / 30);
+      margin-bottom: 2 * @userinfoSpace;
+    }
+    .userinfo-status {
+      color: #999;
+      font-size: (@userinfoHeight - 4 * @userinfoSpace) * (14 / 30);
+
+    }
+
+    .item_left_icon{
+      margin-right: 15px;
+      vertical-align: middle;
+      width:25px;
+      height: 24px;
+    }
+
+  }
+</style>

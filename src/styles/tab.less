@@ -1,0 +1,55 @@
+.pp-navbar {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  z-index: 500;
+  top: 0;
+  width: 100%;
+  height:  ~"88rpx";
+  border-bottom:  ~"1rpx" solid #e7e7e7;
+  position: fixed;
+  background-color: #ffffff;
+  border-bottom: none;
+  border-top: ~"1rpx" solid #e7e7e7;
+  color: #9B9B9B;
+}
+.pp-navbar__item {
+  position: relative;
+  display: block;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  flex: 1;
+  padding: 13px 0;
+  text-align: center;
+  font-size: 0;
+}
+.pp-navbar__item.pp-bar__item_on {
+  color: #222222;
+}
+.pp-navbar__slider {
+  position: absolute;
+  content: " ";
+  bottom: 0;
+  height:  ~"6rpx";
+  transition: transform .35s;
+  -webkit-transition: -webkit-transform 0.3s;
+  transition: -webkit-transform 0.3s;
+  background-color: #5F97F6;
+  width: ~"40rpx";
+  left: ~"105rpx";
+}
+.pp-navbar__title {
+  display: inline-block;
+  font-size:  ~"28rpx";
+  max-width: 8em;
+  width: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: normal;
+}
+
+.pp-tab__panel {
+  margin-top: ~"98rpx";
+  width: 100%;
+}

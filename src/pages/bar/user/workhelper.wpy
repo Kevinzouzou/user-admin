@@ -1,0 +1,104 @@
+<style lang="less">
+  .pp-wrok{
+    width: 100%;
+    height: 100%;
+    border-top:  ~"1rpx" solid #f4f4f4;
+    .pp-work-item{
+      display: flex;
+      height:  ~"120rpx";
+      background: #ffffff;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom:  ~"1rpx" solid #f4f4f4;
+      padding: 0  ~"42rpx";
+      .pp-work-icon{
+        font-size:  ~"30rpx";
+        color: #4A4A4A;
+        vertical-align: middle;
+        .pp-work-img{
+          width:  ~"50rpx";
+          height:  ~"55rpx";
+          vertical-align: middle;
+        }
+        .pp-work-text{
+          vertical-align: middle;
+          margin-left:  ~"33rpx";
+        }
+      }
+      .pp-work-more{
+        vertical-align: middle;
+        .pp-more-img{
+          width:  ~"18rpx";
+          height:  ~"18rpx";
+        }
+      }
+    }
+  }
+
+</style>
+<template>
+  <view class="pp-wrok">
+    <repeat for="{{workList}}" item="item" index="index">
+      <view class="pp-work-item" @tap="clickToMore('{{item.id}}')">
+        <view class="pp-work-icon">
+          <image src="{{item.icon}}" class="pp-work-img"></image>
+          <text class="pp-work-text">{{item.name}}</text>
+        </view>
+        <view class="pp-work-more">
+          <image src="/images/more.png" class="pp-more-img"></image>
+        </view>
+      </view>
+    </repeat>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+
+  export default class My extends wepy.page {
+    config = {
+      navigationBarTitleText: '工作手册'
+    };
+    components = {
+    };
+
+    data = {
+      workList:[]
+    };
+
+    computed = {};
+
+    methods = {
+      clickToMore(id){
+        console.log(id);
+      }
+    };
+
+    events = {};
+
+    onLoad() {
+      this.workList =[
+        {
+          id : 1,
+          name: '巡逻手册',
+          icon: '/images/icon-shouce-blue@2x.png'
+        },
+        {
+          id : 2,
+          name: '设备维护管理手册',
+          icon: '/images/icon-shouce-red@2x.png'
+        },
+        {
+          id : 3,
+          name: '园区功能信息手册',
+          icon: '/images/icon-shouce-yellow@2x.png'
+        },
+        {
+          id : 4,
+          name: '园区人员名单',
+          icon: '/images/icon-shouce-green@2x.png'
+        }
+      ]
+    }
+  }
+</script>

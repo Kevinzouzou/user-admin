@@ -1,0 +1,209 @@
+<style lang="less">
+  @import "../../../styles/commit";
+  @import "../../../styles/form";
+
+  page {
+    background: #172029;
+  }
+
+  textarea {
+    height: ~"236rpx";
+  }
+
+  .pp-com-size {
+    height: ~"1000rpx";
+  }
+
+  .pp-repair-call {
+    width: ~"630rpx";
+    height: ~"160rpx";
+    margin: 0 ~"40rpx";
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: ~"1rpx" solid #e7e7e7;
+    .pp-repair-item {
+      font-size: ~"24rpx";
+      color: #222222;
+      .pp-repair-phone {
+        margin-top: ~"10rpx";
+        font-size: ~"32rpx";
+        color: #C1A17B;
+      }
+    }
+    .pp-repair-icon {
+      width: ~"56rpx";
+      height: ~"56rpx";
+    }
+  }
+</style>
+<template>
+  <view class="pp-commit">
+    <view class="pp-commit-img">
+      <image src="http://lmstore.oss-cn-shenzhen.aliyuncs.com/suggesstions/1527229047083.jpg"
+             class="pp-commit-img"></image>
+      <view class="pp-commit-into" @tap="showMore">申请记录</view>
+      <image src="../../../images/pic_mask_r.png" class="pp-mark-img"></image>
+      <view class="pp-com-form pp-com-size">
+        <view class="pp-enter-title">
+          物业报修
+        </view>
+        <view class="pp-repair-call">
+          <view class="pp-repair-item">
+            <view class="pp-repair-dep">
+              物业-维修部
+            </view>
+            <view class="pp-repair-phone">
+              {{callPhone}}
+            </view>
+          </view>
+          <view class="pp-repair-icon" @tap="call">
+            <image src="{{iconImg}}" class="pp-repair-icon"></image>
+          </view>
+        </view>
+        <view class="pp-cell pp-cells">
+          <view class="pp-label">
+            <text class="pp-label-text">维修位置</text>
+          </view>
+          <view class="pp-input">
+            <input bindinput="inputPlace" placeholder="如：2栋3楼308室卫生间" placeholder-class="input" bindinput="inputChange"
+                   id="location" value="{{params.location}}" maxlength="24"/>
+          </view>
+        </view>
+        <view class="pp-cell pp-cell-area" style="border-bottom: none">
+          <view class="pp-label-area">
+            <view class="pp-area-text ">问题描述</view>
+          </view>
+          <view class="pp-area">
+            <textarea bindinput="textAreaChange" placeholder="请简要输入遇到的问题…" placeholder-class="textarea"
+                      maxlength="140" bindinput="inputChange" id="question" value="{{params.question}}"/>
+          </view>
+        </view>
+        <view class="pp-cell" style="border-bottom: none">
+          <view class="pp-select">
+            <view class="pp-select-upload">
+              <repeat for="{{imglist}}" item="item" index="index">
+                <view class="pp-img-item">
+                  <image src="{{item}}" class="pp-select-img"></image>
+                </view>
+              </repeat>
+              <view class="pp-img-item">
+                <image src="../../../images/icon_tianjiatupian.png" class="pp-select-img" @tap="addImg"></image>
+                <text class="pp-item-size">{{imgSize}}/6</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class='pp-btn pp-mb20' style="margin-top:  30rpx">
+          <veiw @tap="dealTask()" class="pp-btn-text {{isClick?'pp-color':''}}">处理</veiw>
+        </view>
+      </view>
+    </view>
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../api/api';
+  import util from '../../../utils/util';
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '物业报修'
+    };
+    data = {
+      callPhone: '0769-89080988-8029',
+      iconImg: '../../../images/icon_bodadianhua.png',
+      imglist: [],
+      imgSize: 0,
+      params: {
+        question: '',
+        location: ''
+      },
+      isClick: false
+    };
+
+    computed = {};
+
+    methods = {
+      //申请记录
+      showMore() {
+        this.$navigate('./repair');
+      },
+      //输入框变化
+      inputChange(e) {
+        let key = e.currentTarget.id;
+        this.params[key] = e.detail.value;
+        this.isClick = util.isCanNext(this.params);
+      },
+      //提交记录
+      dealTask() {
+        if (!this.isClick) return;
+        let addInfo = {};
+        addInfo.remark = this.params.question;
+        addInfo.imageUrls = this.imglist;
+        let staff = wx.getStorageSync('userInfo');
+        addInfo.companyName = '';
+        addInfo.phone = wx.getStorageSync('phone');
+        addInfo.contact = staff.name;
+        addInfo.location = this.params.location;
+        addInfo.next = 1;
+        let postData = {};
+        postData.userId = wx.getStorageSync('userId');
+        postData.stage = '未完结';
+        postData.type = '物业报修';
+        postData.addInfo = addInfo;
+        api.addSerInfo(postData).then((res) => {
+          this.imgSize = 0;
+          this.params = {};
+          this.imglist = [];
+          this.isClick = false;
+          this.$apply();
+          util.toast('提交成功！');
+        }).catch(err => {
+          util.toast('服务器开小差了！');
+        });
+      },
+      //选择时间框改变时
+      bindStartDateChange(e) {
+        this.startDate = e.detail.value;
+      },
+      //添加图片
+      addImg() {
+        let self = this;
+        if (self.imglist.length >= 6) return;
+        //上传图片
+        wx.chooseImage({
+          success: function(res) {
+            let tempFilePaths = res.tempFilePaths;
+            api.uploaImg({ file: tempFilePaths[0] }).then((res) => {
+              let img = JSON.parse(res.data);
+              self.imglist.push(img.responseList.imgUrl);
+              self.imgSize = self.imglist.length;
+              self.$apply();
+            }).catch((err) => {
+            });
+          }
+        });
+      },
+      //打电话
+      call() {
+        wx.makePhoneCall({
+          phoneNumber: this.callPhone
+        });
+      }
+    };
+
+    events = {};
+
+
+    onLoad() {
+
+    }
+
+    onShow() {
+      wx.setStorageSync('info', '');
+    }
+  }
+</script>

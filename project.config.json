@@ -1,0 +1,16 @@
+{
+	"description": "松湖智谷物业端",
+	"setting": {
+		"urlCheck": true,
+		"es6": false,
+		"postcss": false,
+		"minified": false,
+		"newFeature": true
+	},
+	"compileType": "miniprogram",
+	"appid": "wx9a1711b9640288ac",
+	"projectname": "%E6%9D%BE%E6%B9%96%E6%99%BA%E8%B0%B7%E7%89%A9%E4%B8%9A%E7%AB%AF",
+	"miniprogramRoot": "./dist",
+	"libVersion": "2.0.9",
+	"condition": {}
+}

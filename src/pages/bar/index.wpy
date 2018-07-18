@@ -1,0 +1,261 @@
+<style lang="less">
+  @import "../../styles/custom/fn.less";
+  .weui-cell:before {
+    border-top: none;
+  }
+  .page-index{
+    background-color: #ffffff;
+    border-top:  ~"1rpx" solid #e7e7e7;
+  }
+
+  .greeting{
+    color:#222222;
+    font-size:  ~"40rpx";
+    font-weight: bold;
+  }
+
+  .red-point{
+    position: relative;
+    &:after{
+      position: absolute;
+      top:  ~"4rpx";
+      right:  ~"2rpx";
+      width:  ~"16rpx";
+      height: ~"16rpx";
+      border-radius:  ~"8rpx";
+      background-color: red;
+      content: '';
+      box-shadow: 0 0 0  ~"2rpx" #E7E7E7;
+    }
+  }
+
+  .classify{
+    padding:  ~"20rpx" @mlSpace;
+    font-size:  ~"30rpx";
+    color: #4A4A4A;
+    font-weight: bold;
+  }
+
+  .index-news{
+    display:flex;
+    justify-content:space-between;
+    border-bottom: 0.5px solid #E7E7E7;
+    font-size: 18px;
+    font-weight: bold;
+    .more{
+      color:#B7B7B7;
+    }
+  }
+  .pp-tour {
+    position: relative;
+    width: 100%;
+    height: ~"400rpx";
+    .pp-tour-img {
+      width: ~"750rpx";
+      height: ~"400rpx";
+      position: absolute;
+      z-index: 1;
+    }
+    .pp-park {
+      position: absolute;
+      left: ~"43rpx";
+      top: ~"153rpx";
+      color: #FFFFFF;
+      z-index: 3;
+      .pp-park-name {
+        font-size: ~"40rpx";
+        height: ~"40rpx";
+        line-height: ~"40rpx";
+      }
+      .pp-park-intro {
+        margin-top: ~"11rpx";
+        font-size: ~"24rpx";
+        line-height: ~"28rpx";
+      }
+      .pp-park-into {
+        width: ~"220rpx";
+        height: ~"60rpx";
+        margin-top: ~"38rpx";
+        background: #C1A17B;
+        border-radius: ~"4rpx";
+        text-align: center;
+        line-height: ~"60rpx";
+        font-size:  ~"24rpx";
+      }
+    }
+  }
+</style>
+<template>
+  <view class="page-index">
+    <view class="greeting pl pt" style="padding-top: 70rpx">{{greeting}}</view>
+    <view class="weui-cell weui-cell_access" style="padding-top: 0;">
+      <view class="weui-cell__hd" style="position: relative;margin-right: 10px;">
+        <image src="/images/icons/icon_tianqi_qing@2x.png" style="width: 40rpx; height: 40rpx; display: block"/>
+      </view>
+      <view class="weui-cell__bd" style="color: #9B9B9B;font-size: 28rpx">23℃ 微风3级</view>
+      <image src="/images/icons/icon_xiaoxi@2x.png" class="red-point" style="width: 54rpx; height: 54rpx"/>
+    </view>
+    <view class="pp-tour pp-mb20">
+      <image src="/images/bg.jpg" class="pp-tour-img"
+             mode="aspectFill" style="width: 750rpx; height:400rpx"></image>
+      <image src="/images/pic_mask.png"  mode="aspectFill" style="width: 750rpx; height:400rpx; position: absolute; z-index: 2"></image>
+      <view class="pp-park">
+        <view class="pp-park-name">松湖智谷</view>
+        <view class="pp-park-intro">给企业一个高能的家</view>
+        <view class="pp-park-into">进入虚拟园区</view>
+      </view>
+    </view>
+
+    <view class="pt pb index-news">
+      <view style="display:flex;">
+        <text class="pl" style="color: #EB606A;padding-right: 10rpx; font-size: 30rpx;">新闻速递</text>
+        <view style="font-size: 30rpx; overflow: hidden;white-space: nowrap;text-overflow: ellipsis;width: 432rpx;" @tap="clickDetail('{{news}}')">{{news.title}}</view>
+      </view>
+      <navigator url="/pages/bar/user/news" class="pr" style="display: flex;align-items: center; font-size: 28rpx" >
+        <text class="more" style="font-size: 28rpx">更多</text>
+        <image src="/images/icons/icon_jinru@2x.png" style="width: 20rpx; height: 20rpx; display: block; margin-left: 8rpx"></image>
+      </navigator>
+    </view>
+
+    <Category :list.sync="categorys" col="4"></Category>
+
+    <view class="classify">运营管理</view>
+    <CategoryWithBadge1 :list.sync="operationCategorys" col="4"></CategoryWithBadge1>
+
+    <view class="classify">物业管理</view>
+    <CategoryWithBadge2 :list.sync="propertyCategorys" col="4"></CategoryWithBadge2>
+
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import api from '../../api/api'
+  import Swiper from '../../components/swiper'
+  import Category from '../../components/category'
+  import CategoryWithBadge1 from '../../components/categoryWithBadge'
+  import CategoryWithBadge2 from '../../components/categoryWithBadge'
+  import util from '../../utils/util'
+
+
+  export default class pageIndex extends wepy.page {
+    config = {
+      navigationBarTitleText: '首页',
+    }
+    data = {
+      isAdmin:'员工',
+      greeting: '',
+      swipers: [
+        // 占位图，防止请求错误无图显示
+        {image: `${api.const_host_root}/resource/shzg/pic_youke_banner@2x.png`, url: '/pages/main/search'},
+        {image: `${api.const_host_root}/resource/shzg/pic_fuwu_banner@2x.png`, url: '/pages/main/search'}
+      ],
+
+      news:''
+    }
+
+    computed = {
+      categorys(){
+        let s = [
+            {title: '门禁', url:'/pages/bar/index/accessQrCode', image: '/images/tubiao/icon_menjin@2x.png'},
+            {title: '打卡', url:'/pages/bar/index/clockInOut', image: '/images/tubiao/icon_gongzuotai_daka@2x.png'},
+            {title: '排班', url:'/pages/bar/index/paiban', image: '/images/tubiao/icon_paiban@2x.png'},
+            {title: '报修', url:'/pages/bar/index/repair_manage', image: '/images/tubiao/icon_baoxiu@2x.png'}
+          ]
+        return s;
+      },
+
+      operationCategorys(){
+        let s = [
+            {title: '入驻管理', url:'/pages/bar/index/entryManage', image: '/images/tubiao/icon_ruzhu@2x.png'},
+            {title: '投建管理', url:`/pages/bar/index/toujianManage`, image: '/images/tubiao/icon_toujian@2x.png'},
+            {title: '企业之家', url:'/pages/bar/index/enterpriseFamily', image: '/images/tubiao/icon_qiyezhijia@2x.png'},
+            {title: '物业费', url:'', image: '/images/tubiao/icon_wuyefei@2x.png'},
+            {title: '会议室管理', url:'', image: '/images/tubiao/icon_huiyishiguanli@2x.png'},
+            {title: '共享管理', url:'', image: '/images/tubiao/icon_gongxiangguanli@2x.png'},
+            {title: '公寓管理', url:'', image: '/images/tubiao/icon_gongyuguanli@2x.png'},
+            {title: '商家联盟', url:'', image: '/images/tubiao/icon_shangjialianmeng@2x.png'},
+            {title: '租赁合同', url:'', image: '/images/tubiao/icon_zulinhetong@2x.png'}
+          ]
+
+        return s;
+      },
+
+
+      propertyCategorys(){
+        let s = [
+            {title: '物业监控', url:'', image: '/images/tubiao/icon_jiankong@2x.png'},
+            {title: '维修管理', url:`/pages/bar/index/repair`, image: '/images/tubiao/icon_weixiuguanli@2x.png'},
+            {title: '装修管理', url:`/pages/bar/index/decorator_manage`, image: '/images/tubiao/icon_zhuangxiuguanli@2x.png'},
+            {title: '放行管理', url:`/pages/bar/index/pass_manage`, image: '/images/tubiao/icon_fangxingguanli@2x.png'},
+            {title: '停车管理', url:'', image: '/images/tubiao/icon_tingcheguanli@2x.png'},
+            {title: '设备巡检', url:'/pages/bar/index/equipment_patrol', image: '/images/tubiao/icon_shebeixunjian@2x.png'},
+            {title: '抄表', url:'', image: '/images/tubiao/icon_chaobiao@2x.png'},
+            {title: '巡更', url:'/pages/bar/index/patrol', image: '/images/tubiao/icon_xungeng@2x.png'}
+          ]
+        return s;
+      }
+    };
+    events = {
+
+    }
+    methods = {
+      clickDetail(item){
+        wx.setStorageSync('news',item);
+        wx.navigateTo({
+          url: "/pages/bar/user/news/newsdetail?news=" + JSON.stringify(item)
+        });
+      }
+    }
+    onShareAppMessage(res) {
+      return {
+        title: '园区大脑物业版',
+        imageUrl: 'http://lmstore.oss-cn-shenzhen.aliyuncs.com/suggesstions/1527229746565.png'
+      }
+    }
+    components = {
+      Category,
+      Swiper,
+      CategoryWithBadge1,
+      CategoryWithBadge2
+    }
+
+    onLoad(){
+      this.isAdmin = wx.getStorageSync('role');
+      if(!wx.getStorageSync('token')){
+        this.$redirect('./login');
+        return
+      }
+      this.$apply();
+      this.setGreeting();
+      this.getManagerInfo();
+      let _self = this;
+      api.getSerInfo({parkId: wx.getStorageSync('parkId')}).then(res=>{
+        let news = util.getTypeInfo(res,'公告');
+        _self.news = news[0];
+        _self.$apply();
+      });
+    }
+    //获取部门信息
+    getManagerInfo(){
+      let userInfo = wx.getStorageSync('userInfo');
+      api.getDepartMentInfo({departmentId: userInfo.departmentId}).then(res=>{
+        wx.setStorageSync('roleName',res.name);
+      })
+    }
+    setGreeting(){
+      let time = parseInt(new Date().getHours());    //返回小时数
+      if(6 < time && time < 12){
+        this.greeting = '上午好～'
+      }else if (12 <= time && time <18){
+        this.greeting = "下午好～";
+      }else{
+        this.greeting = '晚上好～'
+      }
+      this.$apply();
+    }
+  }
+</script>
+
+

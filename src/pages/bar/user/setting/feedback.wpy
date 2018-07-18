@@ -1,0 +1,166 @@
+<style lang="less">
+  @import "../../../../styles/commit";
+  @import "../../../../styles/form";
+  page{
+    background: #ffffff;
+  }
+  .pp-suggest {
+    width: 100%;
+    height: ~"380rpx";
+    border-top: ~"1rpx" solid #e7e7e7;
+    display: flex;
+    justify-content: center;
+    .reject_text {
+      margin-top: ~"20rpx";
+      width: ~"670rpx";
+      height: ~"405rpx";
+      padding:  ~"20rpx";
+    }
+    textarea {
+      width: ~"670rpx";
+      height: ~"300rpx";
+      font-size: ~"30rpx";
+    }
+  }
+  .pp-line{
+    height:  ~"1rpx";
+    background: #f4f4f4;
+    border-top:  ~"1rpx" solid #e7e7e7;
+  }
+  .pp-suggest-size {
+    font-size:  ~"24rpx";
+    color: #9B9B9B;
+    text-align: right;
+    margin-right:  ~"40rpx";
+    margin-bottom:  ~"40rpx";
+  }
+  .pp-footer {
+    height: ~"110rpx";
+    width: ~"750rpx";
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    .pp-btn {
+      margin: 0 auto;
+      width: ~"690rpx";
+      height: ~"80rpx";
+      background: #cccccc;
+      border-radius: ~"4rpx";
+      font-size: ~"32rpx";
+      line-height: ~"80rpx";
+      color: #FFFFFF;
+    }
+    .pp-color{
+      background: #C1A17B;
+    }
+  }
+
+</style>
+<template>
+  <view class="pp-suggest">
+    <textarea placeholder="您想对我们说些什么…" placeholder-class="text_area" maxlength="200" class="reject_text" bindinput="inputChange" id="question" value="{{question}}"/>
+  </view>
+  <view class="pp-suggest-size">
+    {{size}}/200
+  </view>
+  <view class="pp-line"></view>
+  <view class="pp-cell" style="border-bottom: none">
+    <view class="pp-select">
+      <view class="pp-select-upload">
+        <repeat for="{{imglist}}" item="item" index="index">
+          <view class="pp-img-item">
+            <image src="{{item.path}}" class="pp-select-img"></image>
+          </view>
+        </repeat>
+        <view class="pp-img-item">
+          <image src="/images/icon_tianjiatupian.png" class="pp-select-img" @tap="addImg"></image>
+          <text class="pp-item-size">{{imgSize}}/6</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="pp-footer">
+    <view class="pp-btn {{isClick?'pp-color':''}}" @tap="toSubmit()">
+      提交
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../../api/api';
+  import util from '../../../../utils/util'
+
+  export default class Suggets extends wepy.page {
+    config = {
+      navigationBarTitleText: '意见反馈'
+    };
+    components = {
+    };
+
+    data = {
+      imglist:[],
+      imgSize: 0,
+      question:'',
+      isClick:false
+    };
+
+    computed = {};
+
+    methods = {
+      //提交
+      toSubmit(){
+        if (!this.isClick) return;
+        let addInfo = {};
+        addInfo.remark = this.question;
+        addInfo.images = this.imglist;
+        let postData = {};
+        postData.parkId = wx.getStorageSync('parkId');
+        postData.type = '意见反馈';
+        postData.addInfo = addInfo;
+        api.addApply(postData).then((res) => {
+          this.imgSize = 0;
+          this.question = '';
+          this.imglist = [];
+          this.isClick = false;
+          this.$apply();
+          util.toast("提交成功！");
+        }).catch(err=>{
+          util.toast("服务器开小差了！")
+        });
+      },
+      //输入框变化
+      inputChange(e) {
+        this.question = e.detail.value;
+        this.isClick = this.question===""?false:true;
+        console.log(this.isClick);
+      },
+      //上传图片
+      addImg() {
+        let self = this;
+        if(self.imglist.length >= 6) return;
+        //上传图片
+        wx.chooseImage({
+          success: function(res) {
+            let tempFilePaths = res.tempFilePaths;
+            api.uploaImg({ file: tempFilePaths[0] }).then((res) => {
+              let img = JSON.parse(res.data);
+              self.imglist.push({path:img.responseList.imgUrl});
+              self.imgSize = self.imglist.length;
+              self.$apply();
+            }).catch((err) => {
+            });
+          }
+        });
+      }
+    };
+
+    events = {};
+
+
+    onLoad() {
+
+    }
+
+  }
+</script>

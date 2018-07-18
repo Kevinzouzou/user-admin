@@ -1,0 +1,61 @@
+<template>
+  <view class="star-container">
+    <view class="star-image">
+      <block wx:for="{{compute_star}}" wx:key="*this" >
+        <image wx:if="{{item}}" src="/images/icons/icon_pingjia_sel@2x.png" style="width: 40rpx; height:40rpx"></image>
+        <image wx:else src="/images/icons/icon_pingjia_nor@2x.png" style="width: 40rpx; height:40rpx"></image>
+      </block>
+    </view>
+    <view wx:if="{{showScore}}" class="star-score">{{score}}</view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class Star extends wepy.component {
+    props = {
+      score: {
+        type: [String, Number],
+        default: 5
+      },
+      showScore: {
+        type: Boolean,
+        default: false
+      },
+      twoWayScore:{
+        type: [String, Number],
+        default: 5,
+        twoWay: true
+      }
+    }
+
+    data = {
+    }
+
+    computed = {
+      compute_star(){
+        const score = this.score > 5 ? 5:this.score;
+        let starArray = [false,false,false,false,false];
+        for(let i=0; i< score; i++){
+          starArray[i] = true;
+        }
+        return starArray;
+      }
+
+
+    }
+
+    methods = {
+
+    }
+
+    onLoad(){
+
+    }
+  }
+</script>
+
+<style type="less">
+
+</style>

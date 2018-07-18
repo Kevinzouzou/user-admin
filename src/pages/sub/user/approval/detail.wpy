@@ -1,0 +1,339 @@
+<template>
+  <view class="apply">
+    <view class="section-item">
+      <view class="header">
+        <view class="left">
+          <view class="left-img">
+            <image class="left-img" src="/images/pic_morentouxiang.png"></image>
+          </view>
+          <view class="left-content">
+            <text class="title" wx:if="{{info.officeType ==='外出'}}">外出申请</text>
+            <text class="title" wx:if="{{info.officeType ==='请假'}}">外出申请</text>
+            <text class="title" wx:if="{{info.officeType ==='出差'}}">出差申请</text>
+            {{item.createTime}}
+          </view>
+        </view>
+        <view class="pp-state waitings" wx:if="{{info.state==='未完结'}}">
+          待处理
+        </view>
+        <view class="pp-state {{info.state==='已完结'&&info.addInfo.result===-2  ?'reject':'end'}}" wx:else>
+          {{info.state==='已完结'&&info.addInfo.result===-2?'已驳回':'已完成'}}
+        </view>
+      </view>
+      <view class="container">
+        <view class="section-normal" style="padding-top: 20rpx" wx:if="{{info.officeType ==='请假'}}">
+          <text class="title">请假类型</text>
+          <text class="normal">{{info.addInfo.subtype}}</text>
+        </view>
+        <view class="section-normal" style="padding-top: 20rpx" wx:if="{{info.officeType !=='请假'}}">
+          <text class="title">外出地点</text>
+          <text class="normal">{{info.addInfo.location}}</text>
+        </view>
+
+        <view class="section-normal">
+          <text class="title">开始时间</text>
+          <text class="normal">{{info.beginTime}}</text>
+        </view>
+        <view class="section-normal">
+          <text class="title">结束时间</text>
+          <text class="normal">{{info.endTime}}</text>
+        </view>
+        <view class="section-normal">
+          <text class="title">请假时长</text>
+          <text class="normal">{{info.addInfo.duration}}</text>
+        </view>
+        <view class="section-normal">
+          <text class="title">请假事由</text>
+          <text class="normal">{{info.typeDetail}}</text>
+        </view>
+        <view class="section-normal">
+          <text class="title">图片附件</text>
+          <view class="img" wx:if="{{info.addInfo.attachments.length>0}}">
+            <repeat for="{{info.addInfo.attachments}}" index="childIndex" key="childIndex" item="url">
+              <image class="{{(childIndex+1)%3!=0?'right':''}}" src="{{url}}" mode='aspectFill'
+                     @tap="previewImg('{{info.addInfo.attachments}}','{{url}}')"></image>
+            </repeat>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="app">
+    <view class="header">
+      审批流程
+    </view>
+    <view class="flow">
+      <!--<view class="dot"></view>-->
+      <view class="flow-content">
+        <view class="left">
+          <view class="left-img {{info.state === '已完结'&&info.addInfo.result ===-2?'':'color'}}">
+          </view>
+          <view class="left-txt">
+            <view wx:if="{{info.state === '已完结'&&info.addInfo.result ===-2}}">{{info.addInfo.flows[0].name}}· 已驳回
+            </view>
+            <view wx:if="{{info.state === '已完结'&&info.addInfo.result !==-2}}">{{info.addInfo.flows[0].name}}· 通过
+            </view>
+            <view wx:if="{{info.state === '未完结'}}">{{info.addInfo.flows[0].name}}· 处理中
+            </view>
+            <view class="txt">{{info.typeDetail}}</view>
+          </view>
+        </view>
+        <view class="right">
+          <!--<image class="right-img" src="../../../../images/bg_tupian_moren@2x.png"></image>-->
+        </view>
+      </view>
+      <!--<view class="flow-content">-->
+      <!--<view class="left">-->
+      <!--<view class="left-img color">-->
+      <!--</view>-->
+      <!--<view class="left-txt">-->
+      <!--<view>行政人事专员 · 已驳回</view>-->
+      <!--<view class="txt">审批通过</view>-->
+      <!--</view>-->
+      <!--</view>-->
+      <!--<view class="right">-->
+      <!--<image class="right-img" src="../../../../images/bg_tupian_moren@2x.png"></image>-->
+      <!--</view>-->
+      <!--</view>-->
+    </view>
+    <view class="header txt">
+      抄送人:{{info.addInfo.recipients[0].department}}{{info.addInfo.recipients[0].name}}
+    </view>
+  </view>
+  <view class="pp-records" wx:if="{{type==='deal'}}">
+    <view class="pp-record-info">
+      审批处理
+    </view>
+    <view class="pp-audit">
+      <view class="pp-audit-name">
+        行政人事专员
+      </view>
+      <view class="pp-audit-check">
+        <repeat for="{{resultList}}" item="item" index="index">
+          <text class="pp-audit-txt {{activeIndex === index?'pp-active':''}}" @tap="clickState('{{index}}')">{{item.text}}</text>
+        </repeat>
+      </view>
+    </view>
+    <textarea bindinput="textAreaChange" placeholder="填写审批意见…" placeholder-class="textarea"
+              maxlength="140" />
+  </view>
+  <view class="pp-btns" @tap="dealTask" wx:if="{{type==='deal'}}">
+    提交
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../bar/user/api/api';
+  import util from '../../../../utils/util'
+
+  export default class MyApproval extends wepy.page {
+    config = {
+      navigationBarTitleText: '详情'
+    };
+    data = {
+      activeIndex: 0,
+      info: {},
+      type: '',
+      settlement: '',
+      resultList: [
+        {
+          text: '通过',
+          state: true
+        }, {
+          text: '驳回',
+          state: false
+        }
+      ],
+      handleResult: '通过',
+    };
+    methods = {
+      //选择驳回还是通过
+      clickState(index) {
+        this.activeIndex = index;
+        this.handleResult = this.resultList[index].text;
+      },
+      //输入框内容
+      textAreaChange(e) {
+        this.settlement = e.detail.value;
+      },
+      //提交处理信息
+      dealTask() {
+        let info = this.info.addInfo.flows[0];
+        info.handleResult = this.handleResult;
+        info.handleContent = this.settlement;
+        info.handleTime = util.dataToDataTime();
+        let postData = this.info;
+        postData.result = info.handleResult==='通过'?0:2;
+        postData.state='已完结';
+        postData.addInfo.flows[0] = info;
+        let _self = this;
+        api.dealApproval(postData).then(res=>{
+          util.toast("提交成功!");
+          _self.$navigate('../myapproval', {index: 1});
+        })
+      }
+    };
+
+    onLoad(params) {
+      this.info = JSON.parse(params.info);
+      console.log(this.info);
+      this.type = params.type;
+    };
+  }
+</script>
+
+<style lang="less">
+  @import "../../../../styles/repair";
+  @import "../../../../styles/list";
+
+  textarea {
+    width: ~"630rpx";
+    height: ~"235rpx";
+    background: #F4F4F4;
+    padding: ~"20rpx";
+  }
+
+  .app {
+    margin-top: ~"10rpx";
+    background: #FFFFFF;
+    width: 100%;
+    .header {
+      height: ~"84rpx";
+      font-size: ~"28rpx";
+      line-height: ~"84rpx";
+      color: #222222;
+      padding: 0 ~"40rpx";
+    }
+    .flow {
+      border-bottom: ~"1rpx" solid #e7e7e7;
+      border-top: ~"1rpx" solid #e7e7e7;
+      /*height: ~"234rpx";*/
+      padding: ~"20rpx" ~"50rpx";
+      position: relative;
+      .dot {
+        position: absolute;
+        left: ~"60rpx";
+        top: ~"88rpx";
+        width: ~"2rpx";
+        height: ~"78rpx";
+        background: #CBCBCB;
+      }
+      .flow-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: ~"107rpx";
+        .left {
+          display: flex;
+          align-items: center;
+          .left-img {
+            width: ~"20rpx";
+            height: ~"20rpx";
+            background: #EB606A;
+            border-radius: 50%;
+            margin-right: ~"30rpx";
+          }
+          .color {
+            background: #8ABB54;
+          }
+          .left-txt {
+            font-size: ~"28rpx";
+            color: #4A4A4A;
+            .txt {
+              font-size: ~"20rpx";
+              color: #9B9B9B;
+            }
+          }
+        }
+        .right-img {
+          width: ~"36rpx";
+          height: ~"36rpx";
+        }
+      }
+    }
+    .txt {
+      font-size: ~"24rpx";
+      color: #757575;
+    }
+  }
+
+  .apply {
+    .section-item {
+      border-top: ~"1rpx" solid #e7e7e7;
+      margin-top: 0;
+    }
+  }
+
+  .waitings {
+    color: #F5A623;
+  }
+
+  .end {
+    color: #75AE36;
+  }
+
+  .reject {
+    color: #EB606A;
+  }
+
+  .pp-state {
+    font-size: ~"30rpx";
+  }
+
+  .pp-records {
+    background: #FFFFFF;
+    height: ~"480rpx";
+    padding: 0 ~"40rpx";
+    font-size: ~"28rpx";
+    color: #333333;
+    margin-top: ~"10rpx";
+    .pp-record-info {
+      height: ~"98rpx";
+      line-height: ~"98rpx";
+    }
+    .pp-audit {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: ~"20rpx";
+      .pp-audit-name {
+        height: ~"60rpx";
+        line-height: ~"60rpx";
+      }
+      .pp-audit-check {
+        text-align: center;
+        .pp-audit-txt {
+          display: inline-block;
+          width: ~"100rpx";
+          background: #e7e7e7;
+          color: #FFFFFF;
+          border-radius: ~"4rpx";
+        }
+        .pp-active {
+          background: #5F97F6;
+          color: #FFFFFF;
+        }
+        .pp-audit-txt:last-child {
+          margin-left: ~"20rpx";
+        }
+      }
+    }
+  }
+
+  .pp-btns {
+    width: ~"690rpx";
+    height: ~"80rpx";
+    background: #5F97F6;
+    border-radius: ~"4rpx";
+    font-size: ~"32rpx";
+    color: #FFFFFF;
+    line-height: ~"80rpx";
+    text-align: center;
+    margin: ~"20rpx" auto;
+  }
+
+  .pp-enter:first-child {
+    margin-top: 0;
+  }
+</style>

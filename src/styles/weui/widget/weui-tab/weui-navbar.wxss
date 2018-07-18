@@ -1,0 +1,44 @@
+@import "../../base/fn.wxss";
+
+@weuiNavBarColor: #4A4A4A;
+.weui-navbar {
+    display: flex;
+    position: absolute;
+    z-index: 500;
+    top: 0;
+    width: 100%;
+    background: #FFFFFF;
+    box-shadow: inset 0 1px 0 0 #E7E7E7;
+}
+
+.weui-navbar__item {
+    position: relative;
+    display: block;
+    flex: 1;
+    padding: 13px 20px;
+    text-align: center;
+    font-size: 0;
+    color: #9B9B9B;
+    font-weight: bold;
+    &.weui-bar__item_on {
+        color: @weuiNavBarColor;
+    }
+}
+.weui-navbar__slider {
+    position: absolute;
+    content: " ";
+    left: 0;
+    bottom: 0;
+    width: 1em;
+    margin-left: -0.5em;
+    height: 3px;
+    background-color: @weuiNavBarColor;
+    transition: transform .3s;
+    z-index: 501;
+}
+.weui-navbar__title{
+    display: inline-block;
+    font-size: 18px;
+    max-width: 8em;
+    .ellipsis();
+}

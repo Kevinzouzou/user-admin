@@ -1,0 +1,85 @@
+<template>
+  <view class="news-list">
+    <block wx:if="{{list.length > 0}}">
+      <repeat for="{{list}}" item="item" index="index">
+        <view class="item" @tap="clickDetail('{{item}}')">
+          <view class="title">{{item.title}}</view>
+          <view class="other">
+            <view>{{item.createTime}}</view>
+          </view>
+        </view>
+      </repeat>
+    </block>
+    <block wx:else>
+      <view class="weui-loadmore weui-loadmore_line">
+        <view class="weui-loadmore__tips weui-loadmore__tips_in-line">暂无内容</view>
+      </view>
+    </block>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class NewsList extends wepy.component {
+    props = {
+      list: {
+        type: Array,
+        default: []
+      }
+    }
+
+    data = {
+
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+      clickDetail(item) {
+        this.$emit("clickDetail", item);
+      }
+    }
+
+  }
+</script>
+
+<style type="less">
+  @import "../styles/custom/fn.less";
+  .weui-loadmore__tips_in-line{
+    top: 0;
+  }
+  .news-list{
+    background-color: #ffffff;
+    margin-top:  ~"100rpx";
+    .item{
+      padding-left: 30rpx;
+      padding-right: 30rpx;
+      border-bottom: 0.5px solid #E7E7E7;
+      padding-top: 20rpx;
+      padding-bottom: 20rpx;
+      .title{
+        margin-bottom: 10rpx;
+        font-size:  ~"32rpx";
+        color: #4A4A4A;
+      }
+
+      .other{
+        display: flex;
+        justify-content: space-between;
+        font-size:  ~"24rpx";
+        color: #9B9B9B;
+        .icon-view{
+          width: 40rpx;
+          height: 24rpx;
+        }
+      }
+    }
+
+  }
+
+
+
+</style>

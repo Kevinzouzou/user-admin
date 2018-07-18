@@ -1,0 +1,234 @@
+<template>
+  <view style="height:230px; position: relative;background: #CBCBCB;">
+    <view style="width: 140px;height: 140px; position: absolute; top:20px; left: 50%; margin-left: -70px;">
+      <view class="corner" style="position: absolute; left:-3px;top:-3px;width: 23px;height:23px;background-color: #4EB8FF"></view>
+      <view class="corner" style="position: absolute; right:-3px;top:-3px;width: 23px;height:23px;background-color: #4EB8FF"></view>
+      <view class="corner" style="position: absolute; left:-3px;bottom:-3px;width: 23px;height:23px;background-color: #4EB8FF"></view>
+      <view class="corner" style="position: absolute; right:-3px;bottom:-3px;width: 23px;height:23px;background-color: #4EB8FF"></view>
+      <view style="position: absolute;width: 100%;height: 100%;background-color:#FFFFFF;"></view>
+    </view>
+    <button bindtap="scanCode" style="width: 220rpx; position: absolute; bottom:20px; left: 50%; margin-left: -110rpx" class="weui-btn mini-btn" type="primary" size="mini">启用摄像头</button>
+  </view>
+
+  <view class="pt pb bcw bb" style="display: flex; align-items: center; justify-content: center">
+    <image src="/images/myicon2018-05-17_101350.png" style="width: 50rpx; height:40rpx"></image>
+    <view class="pl">2018.01.24 今天</view>
+  </view>
+
+  <scroll-view scroll-y class="bcw" style="height:{{svHeight}}px">
+  <view class="list">
+    <block wx:for="{{dataList}}" wx:key="id">
+      <view class="listItem listItem-first green">
+        <view class="listItemContent">
+          <view class="left">
+            <view>{{item.name}}</view>
+            <view class="time">{{item.checkTime}}</view>
+          </view>
+          <view class="right" wx:if="{{item.checkStatus}}">
+            <button class="weui-btn mini-btn green" type="default" size="mini">{{item.checkStatus}}</button>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+  </scroll-view>
+
+
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import api from '../../../api/api'
+
+  export default class Patrol extends wepy.page {
+    config = {
+      navigationBarTitleText: '巡更',
+      enablePullDownRefresh: false
+    }
+
+    data = {
+      patrolPointId:'',
+      svHeight: 0,
+      dataList: []
+    };
+
+    methods = {
+      scanCode(){
+        // 只允许从相机扫码
+        wx.scanCode({
+          onlyFromCamera: true,
+          success: (res) => {
+            wx.navigateTo({
+              url: '/pages/index/patrol/patrol_detail?patrolPointId='+res.result
+            })
+          }
+        })
+      }
+    }
+
+    async onLoad (option) {
+      this.patrolPointId = option.patrolPointId;
+      // TODO 巡更记录添加返回后，这里需要实现相应巡更点的变化
+      let res = await wepy.getSystemInfo();
+      this.svHeight = res.windowHeight - 232;
+      this.$apply();
+
+      this.loginUserId = this.$parent.globalData.loginUserId;
+      let pointResult = await this.getPatrolPoint(api.const_storageKeys.patrolPoint_map, true);
+      let policyResult = await this.getPatrolPolicy(api.const_storageKeys.patrolPolicy_list, true);
+      this.dealResult(pointResult, policyResult);
+      this.$apply();
+    }
+
+    dealResult(patrolPointMap, pointPolicyList){
+      let policyList = pointPolicyList[0].addInfo.policy;
+      for(let j in policyList){
+        let tmp = policyList[j];
+        if(patrolPointMap.hasOwnProperty(tmp.patrolPointId)){
+          let item = {};
+          item.pointId = tmp.patrolPointId;
+          item.name = patrolPointMap[tmp.patrolPointId].addInfo.addr + '-' + patrolPointMap[tmp.patrolPointId].addInfo.area;
+          item.startTime = tmp.startTime;
+          item.endTime = tmp.endTime;
+
+          this.dataList.push(item);
+        }
+      }
+
+    }
+
+  }
+</script>
+
+<style lang="less">
+  .list{
+    background-color: #FFFFFF;
+  }
+  .listItem{
+    position: relative;
+    padding-left: 40px;
+  }
+  .listItem:before { /* 列表项自带竖线 */
+    content: "";
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    border-right: 2px solid #f3f3f3;
+    left: 23px;
+    z-index: 1;
+  }
+  .listItem-first:before {
+    top: 36px;
+  }
+  .listItem-last:before {
+    height: 36px;
+  }
+  .listItem:after { /* 列表项自带小圆点 */
+    content: "";
+    display: inline-block;
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #CBCBCB;
+    border-radius: 6px;
+    left: 20px;
+    top: 36px;
+    z-index: 1;
+    box-shadow: 0 0 0 2px #E7E7E7;
+  }
+  .listItem.green:after {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 12px;
+    height: 12px;
+    background-color: #17C295;
+    border-radius: 6px;
+    left: 20px;
+    z-index: 2;
+  }
+
+  .listItem.red:after {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 12px;
+    height: 12px;
+    background-color: #FE737B;
+    border-radius: 6px;
+    left: 20px;
+    z-index: 2;
+  }
+
+  .listItem.yellow:after {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 12px;
+    height: 12px;
+    background-color: #FF9802;
+    border-radius: 6px;
+    left: 20px;
+    z-index: 2;
+  }
+
+  .listItemContent{
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    padding: 15px;
+    .left{
+      .time{
+        font-size: small;
+      }
+      .remark{
+        background-color: #FE737B;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 10px;
+        margin-right: -86px;
+        color: #FFFFFF;
+        position: relative;
+      }
+      .remark:after {
+        position: absolute;
+        left: -20px;
+        top: 15px;
+        content: '';
+        width: 0;
+        height: 0;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        border-right: 20px solid #FE737B;
+      }
+    }
+    .right{
+      display: flex;
+      align-items: center;
+      width: 88px;
+      min-width: 88px;
+      margin-top: 5px;
+      .green{
+        color: #17C295;
+        border: 0.5px solid #17C295;
+      }
+      .red{
+        color: #FE737B;
+        border: 0.5px solid #FE737B;
+      }
+      .yellow{
+        color: #FF9802;
+        border: 0.5px solid #FF9802;
+      }
+      .clock{
+        background-color: #5F97F6;
+        color: #FFFFFF;
+        padding: 0 14px;
+        border: 0.5px solid #5F97F6;
+      }
+    }
+  }
+
+</style>

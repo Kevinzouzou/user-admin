@@ -1,0 +1,160 @@
+<template>
+  <view class="pp-enter">
+    <view class="pp-enter-title">
+      <view class="pp-enter-time">
+        <view class="pp-time-name">
+          申请时间
+        </view>
+        <view class="pp-time-info">
+          {{record.createTime}}
+        </view>
+      </view>
+    </view>
+    <view class="enter-content">
+      <view class="pp-enter-info">
+        <view class="pp-list">
+          <view class="pp-list-item">
+            申请企业
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.companyName}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            联系人
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.contact}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            联系方式
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.phone}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            所属行业
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.industry}}
+          </view>
+        </view>
+        <view class="pp-list pp-remark">
+          <view class="pp-list-item">
+            入住诉求
+          </view>
+          <view class="pp-list-con pp-list-remark">
+            {{record.addInfo.remark}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <!--任务分派-->
+  <view class="pp-asign">
+    <view class="pp-asign-info">
+      <view class="asign-title">
+        工作分派
+      </view>
+      <view class="assin-per">
+        <view>{{record.addInfo.flows[0].name}} {{record.addInfo.flows[0].handleTime}}指派</view>
+      </view>
+    </view>
+  </view>
+  <view class="pp-record">
+    <view class="pp-record-info">
+      服务回复
+    </view>
+    <textarea bindinput="textAreaChange" placeholder="服务回复…" placeholder-class="textarea"
+              maxlength="140"  />
+  </view>
+  <view class="pp-btn" @tap="dealTask">
+    提交
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../../api/api';
+  import util from '../../../../utils/util';
+
+  /**
+   * 入驻管理，员工界面 - 待处理
+   */
+  export default class EntryManageDetailPending extends wepy.page {
+    config = {
+      navigationBarTitleText: '详情',
+      enablePullDownRefresh: false
+    };
+
+    data = {
+      record: {},
+      settlement:''
+    };
+
+    methods = {
+      //选择分配人员
+      choosePer() {
+        this.$navigate('../../contacts_choose');
+      },
+      //输入框内容
+      textAreaChange(e){
+        this.settlement = e.detail.value;
+      },
+      //处理任务
+      dealTask() {
+        if(!this.settlement){
+          util.toast("请输入服务回复");
+          return
+        }
+        let postData = {};
+        postData = this.record;
+        postData.addInfo.flows[1].handleTime = util.dataToDataTime();
+        postData.addInfo.flows[1].handleTime = util.dataToDataTime();
+        postData.addInfo.next = 0;
+        postData.stage = '已完结';
+        postData.settlement =  this.settlement;
+        console.log(postData);
+        let _self = this;
+        api.dealProperty(postData).then(res => {
+          util.toast('处理成功!');
+          _self.$redirect('/pages/bar/index/entryManage');
+        });
+      }
+    };
+
+    onLoad(params) {
+      this.record = JSON.parse(params.entrys);
+    }
+
+    onShow() {
+      this.info = wx.getStorageSync('info'); //派送人的信息
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "../../../../styles/list";
+
+  .pp-enter {
+    margin-top: 0;
+  }
+ textarea{
+   width: ~"630rpx";
+   height: ~"285rpx";
+   background: #F4F4F4;
+   padding: ~"20rpx";
+ }
+  .assin-per{
+    line-height: ~"34rpx";
+  }
+  .pp-asign .pp-asign-info{
+    align-items: center;
+    line-height: normal;
+  }
+</style>

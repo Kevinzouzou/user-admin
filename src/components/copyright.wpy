@@ -1,0 +1,19 @@
+<template>
+  <view class="copyright">Copyright© 2017 松湖智谷 , All Right Reserved</view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class Copyright extends wepy.component {
+
+  }
+</script>
+
+<style type="less">
+  .copyright{
+    text-align: center;
+    font-size: 24rpx;
+    color: #CBCBCB;
+  }
+</style>

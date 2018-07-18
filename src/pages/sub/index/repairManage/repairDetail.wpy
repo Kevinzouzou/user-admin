@@ -1,0 +1,280 @@
+<template>
+  <view class="apply" style="margin-top: 0">
+    <view class="section-item" style="margin-top: 0; border-top: 1rpx solid #e7e7e7">
+      <view class="container">
+        <view class="section-normal address">
+          <text class="title">报修日期</text>
+          <text class="normal">{{record.createTime}}</text>
+        </view>
+        <view class="section-normal">
+          <text class="title">维修位置</text>
+          <text class="normal">{{record.addInfo.location}}</text>
+        </view>
+        <view class="section-normal">
+          <text class="title">问题简述</text>
+          <text class="normal">{{record.addInfo.remark||'无'}}</text>
+        </view>
+        <view class="section-normal">
+          <text class="title"></text>
+          <view class="img">
+            <repeat for="{{record.addInfo.imageUrls}}" index="childIndex" key="childIndex" item="url">
+              <image class="{{(childIndex+1)%3!=0?'right':''}}" src="{{url}}" mode='aspectFill'
+                     @tap="previewImg('{{record.addInfo.imageUrls}}','{{url}}')"></image>
+            </repeat>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="apply-asign" wx:if="{{!role || type==='evaluate' ||type==='pended' }}">
+    <view class="apply-asign-title">工作分派</view>
+    <view class="apply-asign-content">{{record.addInfo.flows[0].name}} {{record.addInfo.flows[0].handleTime}}分派</view>
+  </view>
+
+  <view class="apply" wx:if="{{type==='evaluate' ||type==='pended'}}">
+    <view class="section-item">
+      <view class="container">
+        <view class="section-normal address">
+          <text class="title">维修反馈</text>
+          <text class="normal">{{record.settlement||'无'}}</text>
+        </view>
+        <view class="section-normal">
+          <text class="title"></text>
+          <view class="img">
+            <repeat for="{{record.addInfo.images}}" index="childIndex" key="childIndex" item="url">
+              <image class="{{(childIndex+1)%3!=0?'right':''}}" src="{{url}}" mode='aspectFill'
+                     @tap="previewImg('{{record.addInfo.images}}','{{url}}')"></image>
+            </repeat>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="apply" hidden="{{type!=='pended'}}">
+    <view class="section-item">
+      <view class="footer">
+        <view class="section-normal rating">
+          <text class="title">服务星级</text>
+          <ppRating :grade.sync="record.addInfo.commentStar" :idx.sync="index"
+                    :readOnly.sync="{{false}}"></ppRating>
+        </view>
+        <view class="section-normal assess">
+          <text class="title">服务评价</text>
+          <view class="normal">
+            <text>{{record.addInfo.commentText || '无'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!--任务分派-->
+  <view class="pp-asign" wx:if="{{role&&type==='pending'}}">
+    <view class="pp-asign-title">
+      任务分派
+    </view>
+    <view class="pp-asign-person">
+      <view>
+        <image src="{{info.addInfo.avatarUrl|| '/images/bg_tupian_moren@2x.png' }}" class="pp-asign-img"
+               mode="aspectFill" wx:if="{{info.id}}"></image>
+        <view class="txt">{{info.addInfo.name}}</view>
+      </view>
+      <view>
+        <image src="../../../../images/icon_gongzhifenpai.png" class="pp-asign-img" mode="aspectFill"
+               @tap="choosePer"></image>
+      </view>
+    </view>
+  </view>
+
+  <view class="pp-record" wx:if="{{!role&&type==='pending'}}">
+    <view class="pp-record-info">
+      工作分派
+    </view>
+    <textarea bindinput="areaChange" placeholder="请输入您对此次服务的评价…" placeholder-class="textarea" maxlength="140" />
+    <view class="pp-cell" style="border-bottom: none">
+      <view class="pp-select">
+        <view class="pp-select-upload">
+          <repeat for="{{imglist}}" item="item" index="index">
+            <view class="pp-img-item">
+              <image src="{{item.path}}" class="pp-select-img"></image>
+            </view>
+          </repeat>
+          <view class="pp-img-item">
+            <image src="/images/icon_tianjiatupian.png" class="pp-select-img" @tap="addImg"></image>
+            <text class="pp-item-size">{{imgSize}}/6</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="pp-btn" @tap="dealTask" wx:if="{{type==='pending'}}">
+    提交
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../../api/api';
+  import util from '../../../../utils/util';
+  import ppRating from '../../../../components/ppRating';
+
+  /**
+   * 入驻管理，员工界面 - 待处理
+   */
+  export default class EntryManageDetailPending extends wepy.page {
+    config = {
+      navigationBarTitleText: '详情',
+      enablePullDownRefresh: false
+    };
+    components = {
+      ppRating: ppRating
+    };
+    data = {
+      record: {}, //显示的数据
+      role: false,//角色信息 包括管理员和员工
+      type: '', //三种状态 待处理 已评价 已完成
+      info: {
+        id: ''
+      },
+      settlement: '',
+      imglist:[],
+      imgSize: 0
+    };
+
+    methods = {
+      //上传图片
+      addImg() {
+        let self = this;
+        if(self.imglist.length >= 6) return;
+        //上传图片
+        wx.chooseImage({
+          success: function(res) {
+            let tempFilePaths = res.tempFilePaths;
+            api.uploaImg({ file: tempFilePaths[0] }).then((res) => {
+              let img = JSON.parse(res.data);
+              self.imglist.push({path:img.responseList.imgUrl});
+              self.imgSize = self.imglist.length;
+              self.$apply();
+            }).catch((err) => {
+            });
+          }
+        });
+      },
+      //预览图片
+      previewImg(itemList, item) {
+        wx.previewImage({
+          current: item, // 当前显示图片的http链接
+          urls: itemList // 需要预览的图片http链接列表
+        });
+      },
+      //多文本输入框
+      areaChange(e) {
+        this.settlement = e.detail.value;
+      },
+      //选择分配人员
+      choosePer() {
+        this.$navigate('/pages/bar/contacts_choose');
+      },
+      //处理任务
+      dealTask() {
+        let type = this.role;
+        let postData = {};
+        if (type) {
+          if (!this.info.id) {
+            util.toast('请选择指派人!');
+            return;
+          }
+          postData = this.record;
+          postData.addInfo.next = 2;
+          let flows = [];
+          let info = {};
+          let userInfo = wx.getStorageSync('userInfo');
+          info.handlerId = wx.getStorageSync('userId');
+          info.name = userInfo.name;
+          info.phone = wx.getStorageSync('phone');
+          info.handleTime = util.dataToDataTime();
+          let dealInfo = {};
+          dealInfo.handlerId = this.info.id;
+          dealInfo.name = this.info.addInfo.name;
+          dealInfo.phone = this.info.phone;
+          flows.push(info);
+          flows.push(dealInfo);
+          postData.addInfo.flows = flows;
+        } else {
+          if (!this.settlement) {
+            util.toast('请输入评价!');
+            return;
+          }
+          postData = this.record;
+          postData.addInfo.flows[1].handleTime = util.dataToDataTime();
+          postData.addInfo.flows[1].handleTime = util.dataToDataTime();
+          postData.addInfo.next = 0;
+          postData.addInfo.images = this.imglist;
+          postData.stage = '已完结';
+          postData.settlement = this.settlement;
+        }
+        let _self = this;
+        api.dealProperty(postData).then(res => {
+          util.toast('处理成功!');
+          _self.$navigate('/pages/bar/index/repair');
+        });
+      }
+    };
+
+    onLoad(params) {
+      this.record = JSON.parse(params.item);
+      this.type = params.type;
+      if (params.role == 1 && params.role) {
+        this.role = true;
+      }
+    }
+
+    onShow() {
+      this.info = wx.getStorageSync('info'); //派送人的信息
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "../../../../styles/repair";
+  @import "../../../../styles/form";
+
+  .apply {
+    margin-top: ~"10rpx";
+  }
+
+  .apply .section-item .container {
+    border: none;
+  }
+
+  .apply-asign {
+    width: 100%;
+    height: ~"100rpx";
+    background: #FFFFFF;
+    font-size: ~"28rpx";
+    color: #333333;
+    display: flex;
+    padding: 0 ~"40rpx";
+    align-items: center;
+    margin-top: ~"10rpx";
+    .apply-asign-title {
+      width: ~"152rpx";
+    }
+    .apply-asign-content {
+
+    }
+  }
+
+  textarea {
+    width: ~"630rpx";
+    height: ~"285rpx";
+    background: #F4F4F4;
+    padding: ~"20rpx";
+  }
+  .pp-record{
+    height: auto;
+  }
+  .pp-cell{
+    margin-left: 0;
+  }
+</style>

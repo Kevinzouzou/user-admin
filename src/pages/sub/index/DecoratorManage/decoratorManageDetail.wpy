@@ -1,0 +1,319 @@
+<template>
+  <view class="pp-enter">
+    <view class="pp-enter-title">
+      <view class="pp-enter-time">
+        <view class="pp-time-name">
+          申请时间
+        </view>
+        <view class="pp-time-info">
+          {{record.createTime}}
+        </view>
+      </view>
+    </view>
+    <view class="enter-content">
+      <view class="pp-enter-info">
+        <view class="pp-app-info">申请公司信息:</view>
+        <view class="pp-list">
+          <view class="pp-list-item">
+            公司名称
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.companyName}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            联系人
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.contact}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            手机号
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.phone}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            邮箱
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.email}}
+          </view>
+        </view>
+        <view class="pp-app-info" style="margin-top: 40rpx">装修公司信息:</view>
+        <view class="pp-list">
+          <view class="pp-list-item">
+            公司名称
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.decorationCompanyName}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            负责人
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.decorationCompanyContact}}
+          </view>
+        </view>
+        <view class="pp-list ">
+          <view class="pp-list-item">
+            手机号
+          </view>
+          <view class="pp-list-con">
+            {{record.addInfo.decorationCompanyPhone}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="apply-asign" wx:if="{{role&&type==='pended'}}">
+    <view class="apply-asign-title">工作分派</view>
+    <view class="apply-asign-content">于{{record.addInfo.flows[0].handleTime}}分配{{record.addInfo.flows[0].name}}</view>
+  </view>
+  <view class="apply-asign" wx:if="{{!role}}">
+    <view class="apply-asign-title">工作分派</view>
+    <view class="apply-asign-content">{{record.addInfo.flows[0].name}} {{record.addInfo.flows[0].handleTime}}分配</view>
+  </view>
+
+  <view class="apply" wx:if="{{type==='pended'}}">
+    <view class="section-item">
+      <view class="container">
+        <view class="section-normal address">
+          <view class="title">投诉反馈</view>
+          <view>
+            <view>{{record.settlement}}</view>
+            <view class="record-txt">{{record.addInfo.flows[1].name}}:{{record.addInfo.flows[1].handleTime}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!--任务分派-->
+  <view class="pp-asign" wx:if="{{role&&type==='pending'}}">
+    <view class="pp-asign-title">
+      任务分派
+    </view>
+    <view class="pp-asign-person">
+      <view>
+        <image src="{{info.addInfo.avatarUrl|| '/images/bg_tupian_moren@2x.png' }}" class="pp-asign-img"
+               mode="aspectFill" wx:if="{{info.id}}"></image>
+        <view class="txt">{{info.addInfo.name}}</view>
+      </view>
+      <view>
+        <image src="../../../../images/icon_gongzhifenpai.png" class="pp-asign-img" mode="aspectFill"
+               @tap="changeAvatarUrl" @tap="choosePer"></image>
+      </view>
+
+    </view>
+  </view>
+
+  <view class="pp-record" wx:if="{{type==='pending'&&!role}}" style="margin-bottom: 140rpx;  height: 620rpx">
+    <view class="pp-record-info">
+      处理意见
+    </view>
+    <repeat for="{{suggestList}}" item="item" index="index">
+      <view class="check" @tap="checkIcon('{{item}}','{{index}}')">
+        <view class="check-icon">
+          <image
+            src="{{item.isCheck?'../../../../images/icon_xuanze_sel.png':'../../../../images/icon_xuanze_nor.png'}}"
+            class="check-img"
+            mode="aspectFill"></image>
+        </view>
+        <view class="check-content">
+          {{item.content}}
+        </view>
+      </view>
+    </repeat>
+    <textarea bindinput="textAreaChange" placeholder="请输入您对此次服务的评价…" placeholder-class="textarea"
+              maxlength="140" bindinput="inputChange"/>
+  </view>
+  <view class="pp-btn" @tap="dealTask" wx:if="{{type==='pending'}}">
+    提交
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../../api/api';
+  import util from '../../../../utils/util';
+  import ppRating from '../../../../components/ppRating';
+
+  /**
+   * 入驻管理，员工界面 - 待处理
+   */
+  export default class EntryManageDetailPending extends wepy.page {
+    config = {
+      navigationBarTitleText: '详情',
+      enablePullDownRefresh: false
+    };
+    components = {
+      ppRating: ppRating
+    };
+    data = {
+      record: {}, //显示的数据
+      role: false,//角色信息 包括管理员和员工
+      type: '', //三种状态 待处理 已评价 已完成
+      info: {
+        addInfo: {},
+        id: ''
+      },
+      settlement: '',
+      suggestList: [
+        {
+          isCheck: true,
+          content: '经核实，装修公司信息不匹配，请核对重新提交！'
+        }, {
+          isCheck: false,
+          content: '您的申请已经初审通过，请留意邮箱，准备相关资料！'
+        }, {
+          isCheck: false,
+          content: '其他意见'
+        }
+      ]
+    };
+
+    methods = {
+      //输入框内容
+      inputChange(e) {
+        this.settlement = e.detail.value;
+      },
+      //点击选择处理意见
+      checkIcon(item, index) {
+        this.suggestList.forEach((n) => {
+          n.isCheck = false;
+        });
+        this.suggestList[index].isCheck = true;
+      },
+      //选择分配人员
+      choosePer() {
+        this.$navigate('/pages/bar/contacts_choose');
+      },
+      //处理任务
+      dealTask() {
+        let type = this.role;
+        let postData = {};
+        if (type) {
+          if (!this.info.id) {
+            util.toast('请选择指派人!');
+            return;
+          }
+          postData = this.record;
+          postData.addInfo.next = 2;
+          let flows = [];
+          let info = {};
+          let userInfo = wx.getStorageSync('userInfo');
+          info.handlerId = wx.getStorageSync('userId');
+          info.name = userInfo.name;
+          info.phone = wx.getStorageSync('phone');
+          info.handleTime = util.dataToDataTime();
+          let dealInfo = {};
+          dealInfo.handlerId = this.info.id;
+          dealInfo.name = this.info.addInfo.name;
+          dealInfo.phone = this.info.phone;
+          flows.push(info);
+          flows.push(dealInfo);
+          postData.addInfo.flows = flows;
+        } else {
+          if (!this.settlement) {
+            util.toast('请输入评价!');
+            return;
+          }
+          postData = this.record;
+          postData.addInfo.flows[1].handleTime = util.dataToDataTime();
+          postData.addInfo.flows[1].handleTime = util.dataToDataTime();
+          postData.addInfo.next = 0;
+          postData.stage = '已完结';
+          postData.settlement = this.settlement;
+        }
+        let _self = this;
+        console.log(postData);
+        api.dealProperty(postData).then(res => {
+          util.toast('处理成功!');
+          _self.$navigate('/pages/bar/index/decorator_manage');
+        });
+      }
+    };
+
+    onLoad(params) {
+      this.record = JSON.parse(params.item);
+      console.log(this.record);
+      if(params.role==1 && params.role){
+        this.role = true;
+      }
+      this.type = params.type;
+      console.log(this.role);
+      console.log(this.type);
+    }
+
+    onShow() {
+      this.info = wx.getStorageSync('info'); //派送人的信息
+      console.log(this.info);
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "../../../../styles/repair";
+  @import "../../../../styles/list";
+
+  .pp-enter {
+    margin-top: 0;
+  }
+
+  .pp-app-info {
+    font-size: ~"28rpx";
+    color: #222222;
+    padding: ~"10rpx" ~"40rpx";
+  }
+
+  .apply-asign {
+    width: 100%;
+    height: ~"100rpx";
+    background: #FFFFFF;
+    font-size: ~"28rpx";
+    color: #333333;
+    display: flex;
+    padding: 0 ~"40rpx";
+    align-items: center;
+    margin-top: ~"10rpx";
+    .apply-asign-title {
+      width: ~"152rpx";
+    }
+  }
+
+  textarea {
+    width: ~"630rpx";
+    height: ~"285rpx";
+    background: #F4F4F4;
+    padding: ~"20rpx";
+  }
+
+  .check {
+    display: flex;
+    .check-content {
+      width: ~"630rpx";
+      margin-left: ~"30rpx";
+      font-size: ~"28rpx";
+      color: #333333;
+      line-height: ~"42rpx";
+    }
+    .check-img {
+      width: ~"36rpx";
+      height: ~"36rpx";
+    }
+  }
+
+  .record-txt {
+    font-size: ~"24rpx";
+    padding-top: ~"10rpx";
+    color: #757575;
+  }
+</style>

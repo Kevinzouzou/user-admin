@@ -1,0 +1,164 @@
+<template>
+  <view class="pp-records">
+    <view class="pp-text" @tap="passTo('','more')">
+      历史记录
+    </view>
+  </view>
+  <view class="pp-content">
+    <repeat for="{{passList}}" item="item" index="index">
+      <view class="pp-enter">
+        <view class="pp-enter-title">
+          <view class="pp-enter-time">
+            <view class="pp-time-name">
+              出行时间
+            </view>
+            <view class="pp-time-info">
+              {{item.addInfo.outTime}}
+            </view>
+          </view>
+          <view class="pp-state" @tap="passTo('{{item}}','deal')">
+            放行{{role==='管理员'?'确认': '处理'}}
+          </view>
+        </view>
+        <view class="enter-content">
+          <view class="pp-enter-info">
+            <view class="pp-list">
+              <view class="pp-list-item">
+                申请人
+              </view>
+              <view class="pp-list-con">
+                {{item.addInfo.userName}}
+              </view>
+            </view>
+            <view class="pp-list ">
+              <view class="pp-list-item">
+                申请企业
+              </view>
+              <view class="pp-list-con">
+                {{item.addInfo.enterprise}}
+              </view>
+            </view>
+            <view class="pp-list pp-remark">
+              <view class="pp-list-item">
+                放行物品
+              </view>
+              <view class="pp-list-con pp-list-remark">
+                {{item.addInfo.items}}
+              </view>
+            </view>
+            <view class="pp-list ">
+              <view class="pp-list-item">
+                申请时间
+              </view>
+              <view class="pp-list-con">
+                {{item.createTime}}
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </repeat>
+  </view>
+
+
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../api/api';
+
+  /**
+   * 放行管理 - 员工层界面 - 列表
+   */
+  export default class PassManage extends wepy.page {
+    config = {
+      navigationBarTitleText: '放行管理',
+      enablePullDownRefresh: false
+    };
+
+    data = {
+      passList: [],
+      role: ''
+    };
+
+    methods = {
+      //跳转页面
+      passTo(item, type) {
+        if (type === 'more') {
+          this.$navigate('/pages/sub/index/PassManage/passManageDetail');
+        } else {
+          this.$navigate('/pages/sub/index/PassManage/deal', { type: 'deal', stage: '', info: JSON.stringify(item) });
+        }
+
+      }
+    };
+
+    onShow() {
+
+    }
+
+    onLoad() {
+      this.role = wx.getStorageSync('role');
+      let _self = this;
+      let postData = {};
+      console.log('role:' + this.role);
+      if (this.role === '管理员') {
+        postData.next = 2;
+      }
+      if (this.role === '保安') {
+        postData.next = 3;
+      }
+      postData.type = '放行申请';
+      postData.stage = '未完结';
+      wx.showLoading({ title: '正在加载中...' });
+      api.queryProperty(postData).then(res => {
+        wx.hideLoading();
+        _self.passList = res;
+        this.$apply();
+      });
+    }
+
+
+  }
+</script>
+
+<style lang="less">
+  @import "../../../styles/list";
+
+  .pp-records {
+    width: 100%;
+    height: ~"80rpx";
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: #FFFFFF;
+    font-size: ~"28rpx";
+    line-height: ~"80rpx";
+    text-align: right;
+    color: #222222;
+    z-index: 999;
+    border-top: ~"1rpx" solid #e7e7e7;
+    .pp-text {
+      padding-right: ~"40rpx";
+    }
+  }
+
+  .pp-content {
+    margin-top: ~"90rpx";
+  }
+
+  .pp-enter {
+    margin-top: ~"10rpx";
+  }
+
+  .pp-state {
+    width: ~"130rpx";
+    height: ~"50rpx";
+    background: #5F97F6;
+    border-radius: ~"4rpx";
+    font-size: ~"24rpx";
+    text-align: center;
+    color: #FFFFFF;
+    line-height: ~"50rpx";
+  }
+</style>

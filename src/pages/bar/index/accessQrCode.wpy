@@ -1,0 +1,99 @@
+<template>
+  <view class="wrap">
+    <view class="page">
+      <view class="topbg-wrap" style="">
+        <view style="" class="topbg">
+          <image src="{{userInfo.addInfo.avatarUrl==null?'/images/pic_morentouxiang.png':userInfo.addInfo.avatarUrl}}" mode="widthFix" style="width: 140rpx;background-color:#F4F4F4;border:2rpx solid #E7E7E7;border-radius: 72rpx;position: absolute; top:-70rpx;left:50%;margin-left: -70rpx"></image>
+        </view>
+      </view>
+      <view style="position: relative; height: 460rpx">
+        <image src="../../../images/QR_code.png" style="width:560rpx; height:560rpx;position: absolute; top:-100rpx;left:50%;margin-left: -280rpx"></image>
+      </view>
+      <view style="display: flex;justify-content: center;align-items: center">
+        <view class="split" style="margin-right: 30rpx"></view>
+        <text style="font-size: 40rpx">松湖智谷1号门 - 门禁</text>
+        <view class="split" style="margin-left: 30rpx"></view>
+      </view>
+      <view style="text-align: center; padding-top: 10rpx;font-size: 26rpx;color: #757575;">
+        <text>华宝一号D座708室</text>
+      </view>
+      <view style="text-align: center; padding-top: 40rpx;">
+        <image src="/images/myicon2018-05-16_152511.png" style="width:144rpx;" mode="widthFix"></image>
+      </view>
+    </view>
+    <view style="font-size: 28rpx;color: #CBCBCB;padding: 40rpx 0">Copyright© 2017 松湖智谷 , All Right Reserved</view>
+  </view>
+
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class AccessQrCode extends wepy.page {
+    config = {
+      navigationBarTitleText: '门禁',
+      enablePullDownRefresh: false
+    }
+    data = {
+      userInfo: {}
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+    }
+
+    components = {
+    }
+
+    onLoad(){
+      this.userInfo = this.$parent.globalData.loginUserInfo;
+      console.log(this.userInfo)
+      this.$apply();
+
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "../../../styles/custom/variable/appconst.less";
+  .wrap {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+  }
+
+  .page{
+    width: 100%;
+  }
+
+  .split{
+    display: inline-block;
+    height: 4rpx;
+    width: 20rpx;
+    background: #5F97F6;
+  }
+
+  .topbg-wrap{
+    height:340rpx;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+  }
+
+  .topbg{
+    flex:1;
+    height:200rpx;
+    background-color: #FFFFFF;
+    margin: 0 20rpx;
+    border-radius: 15rpx 15rpx 0 0;
+    position: relative
+  }
+</style>

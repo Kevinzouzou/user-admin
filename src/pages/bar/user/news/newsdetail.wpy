@@ -1,0 +1,70 @@
+<template>
+  <view class="page-index">
+    <view class="article-title">{{newsRecord.title}}</view>
+    <view class="article-other">
+      <text>{{newsRecord.addInfo.nickName|| '管理员'}}</text>
+      <text>{{newsRecord.createTime}}</text>
+      <text>阅读：{{newsRecord.addInfo.readCount}}</text>
+    </view>
+    <view class="article-content">
+      {{newsRecord.addInfo.content}}
+    </view>
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+
+
+  export default class NewsDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '新闻公告',
+      enablePullDownRefresh: false
+    }
+    data = {
+      newsRecord:{},
+    }
+
+    computed = {
+
+    }
+
+    methods = {
+    }
+
+    components = {
+
+    }
+
+    onLoad(option) {
+      this.newsRecord = wx.getStorageSync('news');
+    };
+  }
+</script>
+
+<style lang="less">
+  .page-index{
+    padding: 40rpx;
+    background-color: #ffffff;
+    border-top:  ~"1rpx" solid #e7e7e7;
+    .article-title{
+      font-size:  ~"36rpx";
+      color: #4A4A4A;
+    }
+    .article-other{
+      font-size:  ~"24rpx";
+      color: #9B9B9B;
+      padding-bottom:  ~"40rpx";
+      text{
+        padding-right: ~"40rpx";
+      }
+    }
+    .article-content{
+      font-size:  ~"28rpx";
+      color: #4A4A4A;
+    }
+  }
+
+</style>

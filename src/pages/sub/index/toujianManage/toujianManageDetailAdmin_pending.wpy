@@ -1,0 +1,247 @@
+<template>
+  <view class="pp-suggest">
+    <view class="pp-suggest-item">
+      <view class="pp-su-text">
+        <view class="pp-su-time">申请时间</view>
+        <view class="pp-su-title">{{record.createTime}}</view>
+      </view>
+    </view>
+    <view class="pp-su-info bt20" style="padding-top: 20rpx">
+      <view class="pp-info-title">
+        业主公司
+      </view>
+      <view class="pp-info-remark">
+        {{record.addInfo.companyName||'无'}}
+      </view>
+    </view>
+    <view class="pp-su-info">
+      <view class="pp-info-title">
+        业主地址
+      </view>
+      <view class="pp-info-remark">
+        {{record.addInfo.address||'无'}}
+      </view>
+    </view>
+    <view class="pp-su-desc">
+      <view class="pp-su-title">
+        问题描述
+      </view>
+      <view class="pp-info">
+        {{record.addInfo.remark}}
+      </view>
+    </view>
+    <view class="pp-img">
+      <view class="pp-su-imgs">
+        <repeat for="{{record.addInfo.imageUrls}}" item="childItem" index="index">
+          <image src="{{childItem}}" class="pp-su-img"
+                 @tap="previewImg('{{record.addInfo.imageUrls}}','{{childItem}}')"></image>
+        </repeat>
+      </view>
+    </view>
+  </view>
+  <view class="pp-tab">
+    <view class="pp-navbar">
+      <repeat for="{{tabs}}" index="index" item="item">
+        <view id="{{index}}" class="pp-navbar__item {{activeIndex == index ? 'pp-bar__item_on' : ''}}"
+              @tap="tabClick">
+          <view class="pp-navbar__title">{{item}}</view>
+        </view>
+      </repeat>
+      <view class="pp-navbar__slider"
+            style="transform: translateX({{sliderOffset}}px); -webkit-transform: translateX({{sliderOffset}}px);"></view>
+    </view>
+    <view class="pp-tab__panel">
+      <view class="pp-tab__content" hidden="{{activeIndex != 0}}">
+        <view class="pp-reply">
+          <textarea bindinput="textAreaChange" placeholder="请输入…" placeholder-class="textarea"
+                    maxlength="140" bindinput="inputChange"/>
+        </view>
+      </view>
+      <view class="pp-tab__content" hidden="{{activeIndex != 1}}">
+        <view class="pp-asign">
+          <view>
+            <image src="{{info.addInfo.avatarUrl|| '/images/bg_tupian_moren@2x.png' }}" class="pp-asign-img"
+                   mode="aspectFill" wx:if="{{info.id}}"></image>
+            <view class="txt" style="font-size: 24rpx;color: #222222;">{{info.addInfo.name}}</view>
+          </view>
+          <view>
+            <image src="../../../../images/icon_gongzhifenpai.png" class="pp-asign-img" mode="aspectFill"
+                   @tap="changeAvatarUrl" @tap="choosePer"></image>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="pp-btn" @tap="dealTask">
+    提交
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy';
+  import api from '../../../../api/api';
+  import util from '../../../../utils/util';
+
+  export default class EntryManageDetailPending extends wepy.page {
+    config = {
+      navigationBarTitleText: '详情',
+      enablePullDownRefresh: false
+    };
+
+    data = {
+      record: {},
+      tabs: ['我来处理', '派人处理'],
+      activeIndex: 0,
+      sliderOffset: 0,
+      sliderLeft: 0,
+      info: {
+        avatarUrl: ''
+      },
+      settlement: ''
+    };
+
+    methods = {
+      //切换选项卡
+      tabClick(e) {
+        this.sliderOffset = e.currentTarget.offsetLeft;
+        this.activeIndex = e.currentTarget.id;
+      },
+      //选择分配人员
+      choosePer() {
+        this.$navigate('/pages/bar/contacts_choose');
+      },
+      //输入框内容
+      inputChange(e) {
+        this.settlement = e.detail.value;
+      },
+      //处理任务
+      dealTask() {
+        let postData = {};
+        if (this.activeIndex === 0) {
+          if (!this.settlement) {
+            util.toast('请输入信息');
+            return;
+          }
+          postData = this.record;
+          postData.addInfo.next = 0;
+          let flows = [];
+          let info = {};
+          console.log(this.info);
+          let userInfo = wx.getStorageSync('userInfo');
+          info.handlerId = wx.getStorageSync('userId');
+          info.name = userInfo.name;
+          info.phone = wx.getStorageSync('phone');
+          info.handleTime = util.dataToDataTime();
+          let dealInfo = {};
+          dealInfo.handlerId = wx.getStorageSync('userId');
+          dealInfo.name = userInfo.name;
+          dealInfo.phone = wx.getStorageSync('phone');
+          dealInfo.handleTime = util.dataToDataTime();
+          flows.push(info);
+          flows.push(dealInfo);
+          postData.addInfo.flows = flows;
+          postData.settlement = this.settlement;
+          postData.stage = '已完结';
+        } else {
+          if (!this.info.id) {
+            util.toast('请选择指派人!');
+            return;
+          }
+          postData = this.record;
+          postData.addInfo.next = 2;
+          let flows = [];
+          let info = {};
+          console.log(this.info);
+          let userInfo = wx.getStorageSync('userInfo');
+          info.handlerId = wx.getStorageSync('userId');
+          info.name = userInfo.name;
+          info.phone = wx.getStorageSync('phone');
+          info.handleTime = util.dataToDataTime();
+          let dealInfo = {};
+          dealInfo.handlerId = this.info.id;
+          dealInfo.name = this.info.addInfo.name;
+          dealInfo.phone = this.info.phone;
+          flows.push(info);
+          flows.push(dealInfo);
+          postData.addInfo.flows = flows;
+        }
+        console.log(postData);
+        let _self = this;
+        api.dealProperty(postData).then(res => {
+          util.toast('处理成功!');
+          _self.$navigate('/pages/bar/index/toujianManage');
+        });
+      }
+    };
+
+
+    onLoad(params) {
+      let res = wepy.getSystemInfo();
+      this.sliderLeft = (res.windowWidth / this.tabs.length) / 2;
+      this.sliderOffset = res.windowWidth / this.tabs.length * this.activeIndex;
+      this.record = JSON.parse(params.entrys);
+    }
+
+    onShow() {
+      this.info = wx.getStorageSync('info'); //派送人的信息
+    }
+  }
+</script>
+
+<style lang="less">
+  @import "../../../../styles/suggest";
+  @import "../../../../styles/tab";
+
+  .pp-suggest {
+    margin-top: 0;
+    border-top: ~"1rpx" solid #e7e7e7;
+  }
+
+  .pp-navbar__slider {
+    left: ~"170rpx";
+  }
+
+  .pp-tab__panel {
+    margin-top: 0;
+  }
+
+  .pp-navbar {
+    position: relative;
+    margin-top: ~"10rpx";
+    border-bottom: ~"1rpx" solid #e7e7e7;
+  }
+
+  .pp-tab__content {
+    background: #FFFFFF;
+  }
+
+  textarea {
+    width: ~"630rpx";
+    height: ~"285rpx";
+    background: #F4F4F4;
+    padding: ~"20rpx";
+    font-size: ~"28rpx";
+    color: #9B9B9B;
+    margin: 0 auto;
+  }
+
+  .pp-reply {
+    width: ~"750rpx";
+    height: ~"440rpx";
+    padding-top: ~"40rpx";
+  }
+
+  .pp-asign {
+    width: 100%;
+    height: ~"230rpx";
+    padding: 0 ~"40rpx";
+    display: flex;
+    align-items: center;
+    margin-top: 0;
+    .pp-asign-img {
+      width: ~"100rpx";
+      height: ~"100rpx";
+      margin-right: ~"40rpx";
+    }
+  }
+</style>
